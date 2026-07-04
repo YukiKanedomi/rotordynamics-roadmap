@@ -440,3 +440,25 @@ a { color: var(--navy); }
   .pl-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .pl-rq { justify-content: flex-start; }
 }
+
+/* ───── AGENDA: SPACE MAP（課題空間・フラット） ───── */
+.ts-src { margin: 0 0 6px; font-size: 11px; color: var(--dim); }
+.ts-rows { display: flex; flex-direction: column; }
+.ts-row {
+  display: grid; grid-template-columns: 250px minmax(0, 1fr) 300px;
+  gap: 12px; align-items: start; padding: 8px 0; border-top: 1px solid var(--line2);
+}
+.ts-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ts-name strong { font-size: 12.5px; line-height: 1.5; }
+.ts-name small { font-family: var(--mono); font-size: 8.5px; color: var(--dim); letter-spacing: .02em; }
+.ts-review { margin: 0; font-size: 11px; line-height: 1.7; color: var(--soft); }
+.ts-cover { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.ts-badge { font-family: var(--mono); font-size: 9px; letter-spacing: .08em; padding: 0 6px; border: 1px solid; flex-shrink: 0; }
+.ts-badge.full { color: var(--ok); border-color: var(--ok); }
+.ts-badge.partial { color: var(--gold); border-color: var(--gold); }
+.ts-badge.none { color: var(--dim); border-color: var(--dim2); }
+.ts-note { font-size: 10px; color: var(--dim); line-height: 1.6; width: 100%; }
+
+@media (max-width: 980px) {
+  .ts-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}

@@ -352,6 +352,15 @@ export const SOURCES: SourceRef[] = [
   { key: 'KAIST-SensorlessAMB-2025', title: 'KAIST — センサレスAMB位置推定（IEMDC 2025 Best Oral）', url: 'https://kmatrix.kaist.ac.kr/sensorless-control-of-active-magnetic-bearings/', primary: true },
   { key: 'TGM-AIEng-2026', title: 'AI in Engineering 2026: Simulation, Digital Twins & Surrogates (TGM)', url: 'https://www.tgm.solutions/en/top-technologies-in-engineering/ai-in-engineering-2026-how-simulation-digital-twins-surrogate-models-are-redefining-cae/', primary: false },
   { key: 'RnM-DCLiquid-2025', title: 'Data Center Liquid Cooling Market 2025-2030 (二次・要裏取り)', url: 'https://www.globenewswire.com/news-release/2025/06/26/3106063/28124/en/Data-Center-Liquid-Cooling-Market-Size-Share-Trends-Analysis-Report-with-Growth-Forecasts-2025-2030.html', primary: false },
+  // ── 2026-07-05 AGENDA 課題空間の外部準拠（学会分類・レビュー分布） ──
+  { key: 'IFToMM-2026-CFP', title: 'IFToMM Rotordynamics 2026 (Lahti) — CFP トピック分類 14項目', url: 'https://easychair.org/cfp/IFToMMrotordynamics2026', primary: true },
+  { key: 'IFToMM-2023-CFP', title: 'IFToMM Rotordynamics 2023 (Beijing) — トピック分類 23項目（転載）', url: 'https://www.aconf.org/conf_182212.11th_IFToMM_International_Conference_on_Rotordynamics.html', primary: false },
+  { key: 'SIRM-2023-Topics', title: 'SIRM 2023 (Darmstadt) — Conference Topics 14項目', url: 'https://www.maschinenbau.tu-darmstadt.de/sirm2023/welcome_sirm2023/conference_topics_history_sirm2023/index.en.jsp', primary: true },
+  { key: 'ASME-TE-SD-2024', title: 'ASME Turbo Expo GT2024 — Structures & Dynamics 恒常7区分（巻構成）', url: 'https://www.proceedings.com/76198.html', primary: true },
+  { key: 'Tong-Morton-AMR-2017', title: 'Tong, Palazzolo & Suh — Morton Effect review (ASME Appl. Mech. Rev. 2017)', url: 'https://asmedigitalcollection.asme.org/appliedmechanicsreviews/article/69/6/060801/367072/', primary: true },
+  { key: 'Machines-Balancing-2021', title: 'Review of Rotor Balancing Methods (Machines 2021)', url: 'https://www.mdpi.com/2075-1702/9/5/89', primary: true },
+  { key: 'NLD-Rub-2020', title: 'Prabith & Krishna — rotor–stator rubbing comprehensive review (Nonlinear Dyn 2020)', url: 'https://link.springer.com/article/10.1007/s11071-020-05832-y', primary: true },
+  { key: 'NLD-Crack-2024', title: 'Al-Shudeifat et al. — rotor damage detection methodologies review (Nonlinear Dyn 2024)', url: 'https://link.springer.com/article/10.1007/s11071-024-09962-5', primary: true },
 ]
 
 // ───────────────────────── 出典解説（注釈付き文献リスト用メタ） ─────────────────────────
@@ -442,6 +451,14 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'AIDC-Torsional-2026': { cat: 'research', note: 'AI-DC負荷急変→発電機ねじり疲労（preprint段階と明記して使用）。' },
   'ASME-GT1996-ShortCircuitTorsion': { cat: 'research', note: '短絡過渡トルクの軸系ねじり（古典）。系統事象×ねじりの基礎。' },
   'Khatri-Hawkins-ISMB16': { cat: 'research', note: 'AMB圧縮機におけるAPI 617とISO 14839-3の突合。規格間ギャップの整理。' },
+  'IFToMM-2026-CFP': { cat: 'research', note: '分野最大の国際会議の公式トピック分類（14項目）。AGENDA の課題空間を外部準拠させる第一の骨格。' },
+  'IFToMM-2023-CFP': { cat: 'secondary', note: '前回北京大会の23項目分類。非公式転載のため二次扱いだが、2026年版CFPと高い連続性。' },
+  'SIRM-2023-Topics': { cat: 'research', note: '欧州ロータダイナミクス会議の公式トピック分類（14項目）。課題空間の欧州側アンカー。' },
+  'ASME-TE-SD-2024': { cat: 'research', note: 'Turbo Expo Structures & Dynamics の恒常7区分（公式巻構成）。産業系の課題分類アンカー。' },
+  'Tong-Morton-AMR-2017': { cat: 'research', note: 'Morton効果（熱誘起同期不安定）の決定版レビュー。以後9年間総説が更新されていない＝空白の証拠でもある。' },
+  'Machines-Balancing-2021': { cat: 'research', note: 'バランシング手法（影響係数/モーダル/能動）の分類総説。バランシング課題の学術側アンカー。' },
+  'NLD-Rub-2020': { cat: 'research', note: 'ラビング数値モデルの包括レビュー。安定性・接触領域の研究活発度の証拠。' },
+  'NLD-Crack-2024': { cat: 'research', note: 'クラックロータのモデル化と検出手法の最新総説。損傷診断課題の学術側アンカー。' },
   // ── 規格・ガイドライン ──
   'API-TR684-1-2019': { cat: 'standard', note: 'ロータダイナミクスの実務チュートリアル正典。本ロードマップのL3分類（危険速度・応答／安定性／ねじり／バランシング）の骨格はここに接地。' },
   'ISO20816-1-2016': { cat: 'standard', note: '機械振動評価の統合規格（旧10816+7919）。「振動評価・状態監視」クラスタの背骨。' },

@@ -19,7 +19,7 @@ import {
   type Horizon,
   type Milestone,
 } from './data/roadmap'
-import { AGENDA, TIER_META, type AgendaTier } from './data/agenda'
+import { AGENDA, TIER_META, TOPIC_SPACE, TOPIC_SPACE_REFS, type AgendaTier } from './data/agenda'
 import { PLAYERS, PLAYER_GROUPS, MA_WATCH, REGION_FILTERS } from './data/players'
 
 type Tab = 'board' | 'story' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'players' | 'sources'
@@ -757,10 +757,12 @@ function AgendaView() {
   return (
     <div className="agenda">
       <div className="panel ag-lede">
-        <h3><b>RESEARCH AGENDA 2026–2031</b> 直近5年で取り組むべき具体的研究課題</h3>
+        <h3><b>RESEARCH AGENDA 2026–2031</b> 直近5年で取り組むべき具体的研究課題 — {AGENDA.length} 件</h3>
         <p className="lede">
-          ロードマップの 〜2030 マイルストーンと立ち上がりの早い 〜2035 項目から、
-          「産業実装が先行し、設計法・検証データ・規格が追いついていない」順に 13 課題を導出。
+          課題空間は分野の総意——IFToMM 2026/2023・SIRM・ASME Turbo Expo の公式トピック分類と
+          直近レビュー論文の分布——に接地させ（下の SPACE MAP）、その上で
+          <em>需要ドライバ接続（ロードマップ）×設計法・検証データ・規格のギャップ</em> の2軸で選定した。
+          採らなかった領域も理由つきで明示する。
           各課題は <em>核心の問い（検証可能な形）／何が難しいか（物理）／5年後のゴール</em> で記述する。
         </p>
         <p className="ag-next">
@@ -769,6 +771,36 @@ function AgendaView() {
           網羅リストではない（調査で更新）。
         </p>
       </div>
+
+      <section className="panel ts-panel">
+        <div className="panel-head">
+          <h3><b>SPACE MAP</b> 課題空間（フラット） — 学会分類×レビュー分布と本アジェンダの対応</h3>
+        </div>
+        <p className="ts-src">
+          領域リストの根拠（公式トピック分類）: <Cite refs={TOPIC_SPACE_REFS} />
+          　凡例: TE=ASME Turbo Expo Structures &amp; Dynamics
+        </p>
+        <div className="ts-rows">
+          {TOPIC_SPACE.map((t) => (
+            <div className="ts-row" key={t.key}>
+              <div className="ts-name">
+                <strong>{t.name}</strong>
+                <small>{t.anchors}</small>
+              </div>
+              <p className="ts-review">{t.review}</p>
+              <div className="ts-cover">
+                <span className={'ts-badge ' + t.cover}>
+                  {t.cover === 'none' ? '非採択' : t.cover === 'partial' ? '部分' : '採択'}
+                </span>
+                {(t.rq ?? []).map((r) => (
+                  <span key={r} className="pl-rqc">{r}</span>
+                ))}
+                {t.note && <small className="ts-note">{t.note}</small>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {TIERS.map((t) => (
         <section key={t} className="ag-tier">

@@ -1,6 +1,9 @@
 // 直近5年（2026–2031）で取り組むべき具体的研究課題（RESEARCH AGENDA）。
-// 導出: ロードマップの 〜2030 マイルストーン＋立ち上がりの早い 〜2035 項目から、
-//       「産業実装が先行し設計法・検証データが追いついていない」順に課題化。
+// 導出（2軸・2026-07-05 フラット化改訂）:
+//   軸1: 課題空間 = 分野の総意（IFToMM 2026/2023・SIRM 2023・Turbo Expo S&D の公式トピック分類
+//        × 直近レビュー論文の分布）で外部準拠に張る（TOPIC_SPACE）。特定の知見体系に依らない。
+//   軸2: 選定 = 需要ドライバ接続（ロードマップの 〜2030/早期 〜2035 マイルストーン）×
+//        設計法・検証データ・規格のギャップ。非採択領域も理由を明示して残す。
 // 次ステップ: 各課題の players はベンチマーク調査（論文・技報・プレス）のシード。
 //             benchAxes が比較軸。bench ステータスは調査完了後に更新する。
 
@@ -45,6 +48,42 @@ export const TIER_META: Record<AgendaTier, { name: string; desc: string }> = {
     desc: '個別機種でなく設計・運用の方法論そのものを変える基盤研究。5年スパンで整備。',
   },
 }
+
+// ───────────── 課題空間（フラット・外部準拠） ─────────────
+// 領域リストは学会公式分類の統合（複数会議に現れるトピック）に基づき、
+// 各領域の「研究活発度／総説の空白」を直近レビュー分布で注記する。
+export interface TopicArea {
+  key: string
+  name: string
+  anchors: string // 学会分類での出現（略記: IFToMM26/23・SIRM・TE=Turbo Expo・ISMB・TPS）
+  review: string // 直近レビュー論文の状況（活発度・空白の証拠）
+  cover: 'full' | 'partial' | 'none'
+  rq?: string[]
+  note?: string // partial/none の理由・扱い
+}
+
+export const TOPIC_SPACE_REFS = ['IFToMM-2026-CFP', 'IFToMM-2023-CFP', 'SIRM-2023-Topics', 'ASME-TE-SD-2024']
+
+export const TOPIC_SPACE: TopicArea[] = [
+  { key: 'bearings-seals', name: '軸受・シール動特性', anchors: 'IFToMM26·23 / SIRM / TE / ISMB / TPS', review: 'ガスフォイル軸受は総説4本超（2022–24）で最活発。シール動特性は個別研究が活発なのに総説空白。', cover: 'full', rq: ['RQ-01', 'RQ-02', 'RQ-03'] },
+  { key: 'stability', name: '動解析・安定性（whirl・自励・ラビング）', anchors: 'IFToMM26·23 / SIRM / TE / TPS', review: 'ラビングは包括総説あり（Nonlinear Dyn 2020）。', cover: 'full', rq: ['RQ-01', 'RQ-03', 'RQ-15'], note: 'ラビング単独のRQは立てず、TDBドロップ（RQ-02）・渦動（RQ-01）の中で扱う。' },
+  { key: 'thermal', name: '熱-振動連成（Morton効果・熱曲がり）', anchors: 'TE / TPS 実務定番（分類上は安定性配下）', review: '総説は2017年（ASME AMR）で停止＝9年間の空白。発生報告は継続。', cover: 'full', rq: ['RQ-15'] },
+  { key: 'balancing', name: 'バランシング・加振低減', anchors: 'IFToMM26·23 / SIRM', review: '分類総説あり（Machines 2021）。ISO/CD 21940-12 改訂進行中。', cover: 'full', rq: ['RQ-14'] },
+  { key: 'monitoring', name: '状態監視・診断・予知（損傷診断含む）', anchors: 'IFToMM26·23 / SIRM / ISMB / TPS', review: 'クラック診断は最新総説あり（Nonlinear Dyn 2024）。DT系レビューは乱立気味（2024–25）。', cover: 'full', rq: ['RQ-12'] },
+  { key: 'control', name: '振動制御・アクティブ要素（SFD・スマートロータ）', anchors: 'IFToMM26·23 / SIRM / ISMB', review: 'AMB制御総説2025。SFDは2002年以降体系的総説が空白。', cover: 'full', rq: ['RQ-17'] },
+  { key: 'emag', name: '電気機械連成（UMP・ベアリングレス）', anchors: 'IFToMM26·23 / SIRM / ISMB', review: 'UMP専用総説は空白。ベアリングレスは2020年。個別研究は活発。', cover: 'full', rq: ['RQ-07'] },
+  { key: 'torsional', name: 'ねじり振動・ギア系', anchors: 'IFToMM26·23', review: 'ねじり専用総説は空白（隣接: 噛合い剛性総説 MMT 2021）。', cover: 'full', rq: ['RQ-05', 'RQ-09'] },
+  { key: 'uq', name: '不確かさ・信頼性・寿命予測', anchors: 'IFToMM26·23 / TE (Probabilistic)', review: '体系的総説あり（Fu, MSSP 2023）。', cover: 'full', rq: ['RQ-10'] },
+  { key: 'digital', name: 'デジタルツイン・AI/ML', anchors: 'IFToMM26 / TE', review: 'DTレビュー乱立（2024–25）＝研究過熱。RD専用実装は依然希薄。', cover: 'full', rq: ['RQ-11', 'RQ-12'] },
+  { key: 'foundation', name: '基礎・支持構造・ケーシング連成（耐震含む）', anchors: 'TE (Structural Mechanics) / ISO 20816・API 684 の支持剛性要求', review: '総説空白（風車の地震影響のみ2026年に統合レビュー）。', cover: 'full', rq: ['RQ-16'] },
+  { key: 'identification', name: '同定・モーダル試験', anchors: 'IFToMM23 / SIRM / ISMB', review: '専用総説は未確認。', cover: 'partial', rq: ['RQ-04', 'RQ-11', 'RQ-14'], note: '独立RQとせず、組立ロータのβ同定（RQ-04）・モデルベースバランス（RQ-14）・DT係数同定（RQ-11）に内包。' },
+  { key: 'nonlinear', name: '非線形・パラメトリック/自励現象', anchors: 'IFToMM23（3項目明示） / IFToMM26 (rub, whirl)', review: '現象横断の総論レビューは2020年以降不在。', cover: 'partial', rq: ['RQ-01', 'RQ-15'], note: '方法論として独立させず、強非線形が支配する個別課題（フォイル軸受・Morton・TDB接触）の中で扱う。' },
+  { key: 'composite', name: '複合材・組立ロータ（CFRP・積層・焼嵌め）', anchors: 'IFToMM23 (Smart Rotor 系) / 個別研究活発', review: '総説空白（2015年の概説章のみ）＝一次データの新規性が高い。', cover: 'full', rq: ['RQ-04'] },
+  { key: 'cryo', name: '機種別: 極低温・ターボポンプ', anchors: 'IFToMM23 (Micro/Cryogenic)', review: 'ターボポンプRD総説は空白。個別解析のみ。', cover: 'full', rq: ['RQ-13'] },
+  { key: 'green', name: 'グリーンエネルギー・貯蔵（FW・水素・sCO2）', anchors: 'IFToMM26·23 / ISMB (flywheels)', review: '会議側で2023年以降トピック新設＝需要側の拡張領域。', cover: 'full', rq: ['RQ-03', 'RQ-06', 'RQ-08'] },
+  { key: 'blade', name: 'ブレード・翼付きディスク・ミスチューニング', anchors: 'IFToMM23 / TE / JSME D&D', review: 'ミスチューニング総説は2017年で停止。', cover: 'none', note: '非採択: 翼・ディスク振動は構造動力学の隣接領域。blade-shaft 連成が危険速度に効く場合のみ機種課題内で扱う。' },
+  { key: 'app-others', name: '機種別: ターボチャージャ・風力・水力・車両', anchors: 'IFToMM23 / SIRM', review: 'ターボチャージャ非線形は研究蓄積厚い（TU Darmstadt 系）。', cover: 'none', note: '非採択: 需要ドライバ接続が弱い（成熟市場）か既存の産業研究体制が厚い。風力の増速機・耐震は RQ-09/16 に部分接続。' },
+]
 
 export const AGENDA: AgendaItem[] = [
   // ───────────── TIER A: 実装先行・設計法が未整備 ─────────────
@@ -184,7 +223,88 @@ export const AGENDA: AgendaItem[] = [
     ],
   },
 
+  {
+    id: 'RQ-15',
+    tier: 'A',
+    title: '熱-振動連成の予測 — Morton効果（熱誘起同期不安定）の設計回避則',
+    rd: ['stability', 'bearing'],
+    drivers: ['D1', 'D2', 'D4'],
+    milestones: ['D1-2', 'D2-7', 'D4-3'],
+    confidence: '確立',
+    question:
+      'ジャーナル周方向温度差→熱曲がり→同期振動成長という熱-振動フィードバック（Morton効果）を、設計段階で発生回転数・成長率まで予測し、高周速オーバーハング機の設計回避則（軸受選定・オーバーハング慣性・冷却）として定式化できるか。',
+    physics:
+      '振れ回るジャーナルは油膜の薄い側がつねに同じ側を向き、そこだけ摩擦加熱される——回りながら片側だけ日焼けする状態。温度差が熱曲がりを生み、曲がりが不釣合いを増やし、振れ回りがさらに偏る正帰還ループ。熱の時定数（分）と振動の時定数（ミリ秒）が3桁離れているため、ゆっくり成長するスパイラルとなり検知も予測も難しい。',
+    goal5y:
+      'Morton安定性マップ（速度×オーバーハング慣性×軸受形式）の実測照合版と、発生時の運転回避・設計変更の判断フロー。',
+    whyNow:
+      'ギアード圧縮機・ターボエキスパンダ・高速モータ一体機とオーバーハング構成が増え発生報告が続く一方、総説は2017年で停止し、熱-構造-油膜連成の予測ツールは実装途上。実務で繰り返し発生するのに設計法が確立していない典型的ギャップ。',
+    sources: ['Tong-Morton-AMR-2017'],
+    benchAxes: ['Morton予測解析（熱-構造-油膜連成）の実装公表', '実機トラブル事例と対策の公開', '予測-実測の照合公表', '商用解析コードでの機能提供'],
+    players: [
+      { name: 'Texas A&M Turbolab', type: '大学' },
+      { name: 'Delta JS（MADYN 2000）', type: 'OEM' },
+      { name: 'Waukesha Bearings（Dover）', type: 'OEM' },
+      { name: 'Kingsbury', type: 'OEM' },
+      { name: 'SwRI', type: '研究機関' },
+    ],
+    gap: 'Morton効果の総説は2017年（ASME AMR）を最後に更新されておらず、予測実装・実測照合の体系的整理が空白。',
+  },
+
   // ───────────── TIER B: 需要立ち上がりが確定的 ─────────────
+  {
+    id: 'RQ-14',
+    tier: 'B',
+    title: '弾性ロータバランシングの現代化 — モデルベース・少数試運転・量産インライン',
+    rd: ['balancing', 'critspeed'],
+    drivers: ['D1', 'D5', 'D6'],
+    milestones: ['D1-1', 'D5-6', 'D6-2'],
+    confidence: '確立',
+    question:
+      '影響係数法・モーダルバランスをモデルベース化（試し錘レス／少数試運転）・自動化し、量産高速ロータ（e-axle・FC圧縮機）のインラインバランスと、大型転用機・再稼働機の現地バランスの両端で、ISO 21940 系に載る手順として確立できるか。',
+    physics:
+      'バランシングはモード直交性を使った逆問題で、試し錘は感度行列を実測で得る手段。モデル（とその不確かさ）が信頼できるほど試運転回数を減らせる——精度の源泉が実測からモデルへ移る転換点にある。回転数を上げるほど高次モードが顔を出し、修正面の数と位置が幾何で縛られるのが本質的制約。',
+    goal5y:
+      '試し錘レス（モデルベース）バランスの実証データ（予測感度と実測感度の誤差統計）と、量産ラインでのバランス等級保証の統計的工程管理手順。',
+    whyNow:
+      'ISO/CD 21940-12（弾性ロータ）の改訂が進行中で手順の現代化が論点。e-axle 20–30k rpm・FC 10万rpm級の量産は「1本ずつ職人バランス」を許さない物量になる。調相機転用・再稼働（D6-2）は現地再バランスの需要。',
+    sources: ['ISO21940-12-CD', 'Machines-Balancing-2021'],
+    benchAxes: ['試し錘レス/少数回バランスの公表実証', '量産インラインバランス設備の導入状況', '高速バランシング設備（真空ピット）の保有', 'ISO/TC 108 SC2 への関与'],
+    players: [
+      { name: 'Schenck RoTec（Dürr）', type: 'OEM' },
+      { name: '国際計測器', type: 'OEM' },
+      { name: '長浜製作所', type: 'OEM' },
+      { name: 'Cleveland State RoMaDyC', type: '大学' },
+      { name: 'IIT Guwahati', type: '大学' },
+    ],
+  },
+  {
+    id: 'RQ-16',
+    tier: 'B',
+    title: '支持構造・基礎連成 — 動剛性の現地同定と据付側込みの危険速度予測',
+    rd: ['critspeed', 'torsional'],
+    drivers: ['D3', 'D6'],
+    milestones: ['D3-8', 'D6-1', 'D6-2'],
+    confidence: '確立',
+    question:
+      '支持構造・基礎の周波数依存動剛性を実測同定してロータ解析へ織り込む手順を標準化し、転用機・再稼働機・耐震要求機（SMR・データセンタ）で「機械単体設計と据付側の分断」を解消できるか。',
+    physics:
+      'ロータから見た支持は油膜＋台板＋基礎の直列ばねで、最も柔らかい要素が支配する。基礎が機械と同程度に柔らかいと危険速度は台板モードと連成して分裂し、単体計算が現地で当たらない古典的原因になる。地震・床振動は基礎側からの広帯域加振で、通常運転では眠っている連成モードを起こす。',
+    goal5y:
+      '据付後の支持動剛性の現地同定プロトコル（加振試験×運転データ）と、支持連成込み危険速度の予測-実測照合データベース。',
+    whyNow:
+      '退役火力の調相機転用（D6-2）・原子力再稼働（D3-8）は既存基礎に別の機械を載せる工事で、支持連成の再評価が必須。データセンタは床振動・耐震要求の厳しい新しい据付先。ISO 20816 の支持分類・API 684 の支持剛性要求はあるが、現地同定の標準手順は空白。',
+    sources: ['ISO20816-1-2016', 'API-TR684-1-2019'],
+    benchAxes: ['支持動剛性の実測同定事例の公表', '基礎連成解析の標準手順の保有', '耐震・地震応答評価の実績', '転用・再稼働案件での再評価実績'],
+    players: [
+      { name: 'Siemens Energy', type: 'OEM' },
+      { name: 'GE Vernova', type: 'OEM' },
+      { name: '三菱重工', type: 'OEM' },
+      { name: 'Engineering Dynamics (EDI)', type: 'OEM' },
+      { name: 'SwRI', type: '研究機関' },
+    ],
+    gap: 'ロータ-基礎連成・地震応答の総説は空白（風車の地震影響レビューのみ）。現地同定プロトコルの標準も不在。',
+  },
   {
     id: 'RQ-06',
     tier: 'B',
@@ -350,7 +470,7 @@ export const AGENDA: AgendaItem[] = [
     milestones: ['D5-2', 'D3-5'],
     confidence: '確立',
     question:
-      'オーダートラッキング・フルスペクトルなど確立した診断特徴量と学習ベースの異常検知・RUL推定を接続し、ISO 13373系に載る形の「AI診断ガイドライン」として標準化できるか。',
+      'オーダートラッキング・フルスペクトルなど確立した診断特徴量と、クラック・ラビング・ミスアライメント等の損傷モード物理、および学習ベースの異常検知・RUL推定を接続し、ISO 13373系に載る形の「AI診断ガイドライン」として標準化できるか。',
     physics:
       '回転機械の故障モードは1×・2×・サブシンクロナス・通過周波数といった「周波数の指紋」を持つ。学習モデルに生波形を丸投げするのではなく、この指紋を特徴量として渡すことが、少ない故障データで汎化する鍵になる。',
     goal5y:
@@ -389,6 +509,31 @@ export const AGENDA: AgendaItem[] = [
       { name: 'NASA MSFC', type: '研究機関' },
       { name: 'JAXA / IHI', type: '研究機関' },
       { name: 'ArianeGroup', type: 'OEM' },
+      { name: 'Texas A&M Turbolab', type: '大学' },
+    ],
+  },
+  {
+    id: 'RQ-17',
+    tier: 'C',
+    title: '能動・セミアクティブ振動制御 — 可変ダンパ・スマートロータのフェイルセーフ実装',
+    rd: ['stability', 'bearing'],
+    drivers: ['D5', 'D1'],
+    milestones: ['D5-4', 'D1-2'],
+    confidence: '推定',
+    question:
+      '圧電可変スクイーズフィルムダンパ・磁気アクチュエータ等による能動/セミアクティブ制振を、フェイルセーフ要件（故障時に受動特性へ安全に戻る）と両立する形で産業機に実装し、危険速度通過・突発不釣合い・安定性余裕不足への「後付け可能な減衰」として確立できるか。',
+    physics:
+      '受動ダンパは最悪条件に合わせた固定の妥協で、能動制御は運転点ごとに減衰を作り変えられる。ただしアクチュエータの力はロータの慣性力に比べ小さいため、勝負どころは共振近傍——Q値が高い場所ほど小さな力で大きく効くテコの原理で成立する。故障時に受動特性へ戻れるかが実装の分水嶺。',
+    goal5y:
+      'セミアクティブSFDの実機実証（危険速度通過振幅の低減量の定量公表）と、能動制御系のフェイルセーフ設計指針（受動フォールバック）。',
+    whyNow:
+      '圧電可変SFD等の研究が2024年に活発化し、超臨界運転の標準化（V2）で通過制振の価値が上昇。AMB機の普及で「制御で振動を作り変える」文化が産業に浸透しつつあり、SFDの体系的総説が2002年以降空白という学術側の隙もある。',
+    sources: ['JSV-PiezoSFD-2024', 'MDPI-AMB-Review-2025'],
+    benchAxes: ['能動/セミアクティブダンパの実機適用公表', 'フェイルセーフ設計（受動フォールバック）の開示', 'アクチュエータ技術の選択（圧電/磁気/ER・MR）', '制振効果の定量公表'],
+    players: [
+      { name: 'University of Bath', type: '大学' },
+      { name: 'Cleveland State RoMaDyC', type: '大学' },
+      { name: 'Calnetix Technologies', type: 'OEM' },
       { name: 'Texas A&M Turbolab', type: '大学' },
     ],
   },
