@@ -20,8 +20,9 @@ import {
   type Milestone,
 } from './data/roadmap'
 import { AGENDA, TIER_META, type AgendaTier } from './data/agenda'
+import { PLAYERS, PLAYER_GROUPS, MA_WATCH, REGION_FILTERS } from './data/players'
 
-type Tab = 'board' | 'story' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'sources'
+type Tab = 'board' | 'story' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'players' | 'sources'
 const TABS: [Tab, string][] = [
   ['board', 'BOARD'],
   ['story', 'STORY'],
@@ -29,6 +30,7 @@ const TABS: [Tab, string][] = [
   ['drivers', 'DRIVERS'],
   ['rd', 'RD MAP'],
   ['agenda', 'AGENDA'],
+  ['players', 'PLAYERS'],
   ['sources', 'SOURCES'],
 ]
 
@@ -228,6 +230,7 @@ export default function App() {
           />
         )}
         {tab === 'agenda' && <AgendaView />}
+        {tab === 'players' && <PlayersView />}
         {tab === 'sources' && <SourcesView />}
       </main>
 
@@ -821,6 +824,96 @@ function AgendaView() {
           </div>
         </section>
       ))}
+    </div>
+  )
+}
+
+/* ═════════════════ PLAYERS（主要プレイヤー台帳） ═════════════════ */
+function PlayersView() {
+  const [region, setRegion] = useState('all')
+  const filt = REGION_FILTERS.find((f) => f.key === region) ?? REGION_FILTERS[0]
+  const shown = PLAYERS.filter((p) => filt.match(p.region))
+  const regionCount = (key: string) => {
+    const f = REGION_FILTERS.find((x) => x.key === key)!
+    return PLAYERS.filter((p) => f.match(p.region)).length
+  }
+  return (
+    <div className="players">
+      <div className="panel pl-lede">
+        <h3><b>PLAYERS REGISTRY</b> ロータダイナミクス関連の主要プレイヤー台帳 — {PLAYERS.length} 件</h3>
+        <p className="lede">
+          機械OEM／要素サプライヤ／ソフトウェア・計測・サービス／研究機関・規格団体の4群
+          {PLAYER_GROUPS.reduce((n, g) => n + g.cats.length, 0)} セグメントで整理。
+          社名は M&A 追跡済みの現行名（2026-07 調査、一次出典リンク付き）。
+          <span className="pl-chk">要確認</span> は実体・資本関係・現況に未確認事項が残る項目。
+          この台帳は AGENDA（研究課題）のベンチマーク調査の母集団であり、調査の進行に応じて更新する。
+        </p>
+        <div className="pl-ma">
+          <div className="pl-ma-h">M&A WATCH — 社名・帰属の最近の変化</div>
+          {MA_WATCH.map((m) => (
+            <div className="pl-ma-row" key={m.year}>
+              <span className="pl-ma-y">{m.year}</span>
+              <span>{m.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pl-filter">
+        <span className="pl-fl">REGION</span>
+        {REGION_FILTERS.map((f) => (
+          <button key={f.key} className={region === f.key ? 'chip on' : 'chip'} onClick={() => setRegion(f.key)}>
+            {f.label} <small>{regionCount(f.key)}</small>
+          </button>
+        ))}
+      </div>
+
+      {PLAYER_GROUPS.map((g) => {
+        const groupItems = g.cats.flatMap((c) => shown.filter((p) => p.cat === c.key))
+        if (groupItems.length === 0) return null
+        return (
+          <section className="pl-group" key={g.key}>
+            <div className="pl-group-head">
+              <strong>{g.name}</strong>
+              <small>{groupItems.length} 件</small>
+            </div>
+            {g.cats.map((c) => {
+              const items = shown.filter((p) => p.cat === c.key)
+              if (items.length === 0) return null
+              return (
+                <div className="panel pl-cat" key={c.key}>
+                  <div className="pl-cat-head">
+                    <strong>{c.name}</strong>
+                    <small>{c.desc}</small>
+                  </div>
+                  <div className="pl-rows">
+                    {items.map((p) => (
+                      <div className="pl-row" key={p.id}>
+                        <div className="pl-name">
+                          <span className="pl-rg">{p.region}</span>
+                          <span className="pl-nm">{p.name}</span>
+                          {p.verify && <span className="pl-chk">要確認</span>}
+                        </div>
+                        <p className="pl-note">
+                          {p.note}
+                          {p.src && (
+                            <a className="src-a" href={p.src} target="_blank" rel="noreferrer">出典↗</a>
+                          )}
+                        </p>
+                        <div className="pl-rq">
+                          {(p.rq ?? []).map((r) => (
+                            <span key={r} className="pl-rqc">{r}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </section>
+        )
+      })}
     </div>
   )
 }
