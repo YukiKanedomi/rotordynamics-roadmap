@@ -19,14 +19,16 @@ import {
   type Horizon,
   type Milestone,
 } from './data/roadmap'
+import { AGENDA, TIER_META, type AgendaTier } from './data/agenda'
 
-type Tab = 'board' | 'story' | 'linkage' | 'drivers' | 'rd' | 'sources'
+type Tab = 'board' | 'story' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'sources'
 const TABS: [Tab, string][] = [
   ['board', 'BOARD'],
   ['story', 'STORY'],
   ['linkage', 'LINKAGE'],
   ['drivers', 'DRIVERS'],
   ['rd', 'RD MAP'],
+  ['agenda', 'AGENDA'],
   ['sources', 'SOURCES'],
 ]
 
@@ -225,6 +227,7 @@ export default function App() {
             }}
           />
         )}
+        {tab === 'agenda' && <AgendaView />}
         {tab === 'sources' && <SourcesView />}
       </main>
 
@@ -740,6 +743,84 @@ function RDView({ onJump }: { onJump: (key: string) => void }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+/* ═════════════════ AGENDA（直近5年の研究課題） ═════════════════ */
+const TIERS: AgendaTier[] = ['A', 'B', 'C']
+
+function AgendaView() {
+  return (
+    <div className="agenda">
+      <div className="panel ag-lede">
+        <h3><b>RESEARCH AGENDA 2026–2031</b> 直近5年で取り組むべき具体的研究課題</h3>
+        <p className="lede">
+          ロードマップの 〜2030 マイルストーンと立ち上がりの早い 〜2035 項目から、
+          「産業実装が先行し、設計法・検証データ・規格が追いついていない」順に 13 課題を導出。
+          各課題は <em>核心の問い（検証可能な形）／何が難しいか（物理）／5年後のゴール</em> で記述する。
+        </p>
+        <p className="ag-next">
+          <b>NEXT PHASE</b> 各課題の BENCHMARK 欄は次段の調査計画：比較軸（AXES）に沿って主要企業・研究機関の
+          到達レベルを論文・技報・プレスリリースから評価する。PLAYERS は一次資料から採ったシードであり、
+          網羅リストではない（調査で更新）。
+        </p>
+      </div>
+
+      {TIERS.map((t) => (
+        <section key={t} className="ag-tier">
+          <div className="ag-tier-head">
+            <span className="ag-tid">TIER {t}</span>
+            <strong>{TIER_META[t].name}</strong>
+            <small>{TIER_META[t].desc}</small>
+          </div>
+          <div className="ag-grid">
+            {AGENDA.filter((a) => a.tier === t).map((a) => (
+              <article className="panel ag-card" key={a.id}>
+                <div className="ag-top">
+                  <span className="ag-id">{a.id}</span>
+                  <span className="ag-chips">
+                    {a.rd.map((k) => (
+                      <span key={k} className="ag-rd" style={{ color: RD_COLORS[k], borderColor: RD_COLORS[k] }}>
+                        {CHIP_LABEL[k] ?? k}
+                      </span>
+                    ))}
+                  </span>
+                  <span className={confClass(a.confidence)}>{a.confidence}</span>
+                </div>
+                <h4 className="ag-title">{a.title}</h4>
+                <p className="ag-q">{a.question}</p>
+                <div className="ag-row"><span className="ag-l">物理</span><p>{a.physics}</p></div>
+                <div className="ag-row"><span className="ag-l">5年ゴール</span><p>{a.goal5y}</p></div>
+                <div className="ag-row"><span className="ag-l">なぜ今</span><p>{a.whyNow} <Cite refs={a.sources} /></p></div>
+                {a.gap && <div className="ag-gap"><b>GAP</b> {a.gap}</div>}
+                <div className="ag-bench">
+                  <div className="ag-bh">
+                    <b>BENCHMARK</b>
+                    <span className="ag-status">未実施</span>
+                    <span className="ag-link">
+                      {a.drivers.join(' ')} ／ {a.milestones.join(' ')}
+                    </span>
+                  </div>
+                  <div className="ag-axes">
+                    {a.benchAxes.map((x, i) => (
+                      <span key={i} className="ag-ax">{x}</span>
+                    ))}
+                  </div>
+                  <div className="ag-players">
+                    {a.players.map((p) => (
+                      <span key={p.name} className={'ag-pl t-' + (p.type === 'OEM' ? 'oem' : p.type === '大学' ? 'uni' : 'lab')}>
+                        <i>{p.type}</i>
+                        {p.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }
