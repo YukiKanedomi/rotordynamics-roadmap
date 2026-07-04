@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rotordynamics Roadmap">
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <g transform="translate(256,256) rotate(-24)">
+    <path d="M 156 0 A 156 104 0 1 1 120 -66"
+          fill="none" stroke="#161616" stroke-width="32" stroke-linecap="round"/>
+    <circle cx="156" cy="0" r="48" fill="#1F3A5F" stroke="#FFFFFF" stroke-width="12"/>
+    <g transform="rotate(24)">
+      <circle r="52" fill="#FFFFFF"/>
+      <circle r="52" fill="none" stroke="#161616" stroke-width="15"/>
+    </g>
+  </g>
+</svg>

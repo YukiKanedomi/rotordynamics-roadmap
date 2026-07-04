@@ -1,0 +1,21 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rotordynamics Roadmap — rotor whirl orbit">
+  <!-- full-bleed 白地（角丸はOS任せ。Clinical Grid の白基調） -->
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <!-- hairline フレーム -->
+  <rect x="38" y="38" width="436" height="436" fill="none" stroke="#161616" stroke-opacity="0.14" stroke-width="4"/>
+  <g transform="translate(256,256) rotate(-24)">
+    <!-- ふれまわり楕円軌道（節点位置に切れ目） -->
+    <path d="M 150 0 A 150 96 0 1 1 118.4 -58.9"
+          fill="none" stroke="#161616" stroke-width="20" stroke-linecap="round"/>
+    <!-- 進行方向の矢じり（ネイビー） -->
+    <path d="M -150 8 L -150 -30 L -122 -14"
+          fill="none" stroke="#1F3A5F" stroke-width="17" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- 節点（ネイビー） -->
+    <circle cx="150" cy="0" r="36" fill="#1F3A5F" stroke="#FFFFFF" stroke-width="8"/>
+    <!-- 軸中心 -->
+    <g transform="rotate(24)">
+      <circle r="34" fill="#FFFFFF"/>
+      <circle r="34" fill="none" stroke="#161616" stroke-width="10"/>
+    </g>
+  </g>
+</svg>

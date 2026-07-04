@@ -1,0 +1,45 @@
+/* ============================================================
+   Theme: "Clinical Grid"（rotordynamics-roadmap 専用トークン）
+   - 純白スイス: 角丸ゼロ・hairline罫・パネル上辺の黒罫
+   - アクセントはネイビー単色＋控えめな状態色（増=緑/減=赤/注意=金）
+   - タイポ: JetBrains Mono（データ・ラベル）× Shippori Mincho（和文）
+     × Newsreader italic（引用のみ）
+   ============================================================ */
+:root {
+  /* ---- surface ---- */
+  --bg:        #FFFFFF;
+  --panel:     #FFFFFF;
+  --sink:      #F7F7F7;   /* わずかな沈み込み（帯・コード背景） */
+  --line:      #E5E5E5;   /* hairline */
+  --line2:     #EFEFEF;   /* さらに淡い罫・グリッド */
+  --rule-ink:  #161616;   /* パネル上辺の黒罫 */
+
+  /* ---- text ---- */
+  --ink:       #161616;
+  --soft:      #454545;
+  --dim:       #9A9A9A;
+  --dim2:      #C4C4C4;
+
+  /* ---- accent（単色主義） ---- */
+  --navy:      #1F3A5F;
+  --navy2:     #7E93AF;   /* 淡ネイビー（補助線・仮説） */
+  --navy3:     #93A5BC;
+
+  /* ---- status（意味にだけ使う） ---- */
+  --ok:        #3D7A50;
+  --warn:      #B23A3A;
+  --gold:      #A97B18;
+
+  /* ---- data ---- */
+  --barbg:     #F2F2F2;
+  --gline:     #F0F0F0;
+  --gline2:    #DEDEDE;
+  --tlc:       #D8D8D8;   /* タイムライン基線 */
+
+  /* ---- type ---- */
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --jp:   'Shippori Mincho', serif;
+  --it:   'Newsreader', serif;
+
+  --maxw: 1360px;
+}
