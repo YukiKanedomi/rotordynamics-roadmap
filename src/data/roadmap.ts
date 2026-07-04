@@ -361,6 +361,10 @@ export const SOURCES: SourceRef[] = [
   { key: 'Machines-Balancing-2021', title: 'Review of Rotor Balancing Methods (Machines 2021)', url: 'https://www.mdpi.com/2075-1702/9/5/89', primary: true },
   { key: 'NLD-Rub-2020', title: 'Prabith & Krishna — rotor–stator rubbing comprehensive review (Nonlinear Dyn 2020)', url: 'https://link.springer.com/article/10.1007/s11071-020-05832-y', primary: true },
   { key: 'NLD-Crack-2024', title: 'Al-Shudeifat et al. — rotor damage detection methodologies review (Nonlinear Dyn 2024)', url: 'https://link.springer.com/article/10.1007/s11071-024-09962-5', primary: true },
+  // ── 2026-07-05 RQ-15 Morton効果ベンチマーク（代表出典） ──
+  { key: 'DeltaJS-HotSpot', title: 'Delta JS — Hot Spot Stability Analysis (Morton/Newkirk), MADYN 2000 標準機能', url: 'https://www.delta-js.ch/en/engineering/rotordynamic-analyses/hot-spot-stability-analysis/', primary: true },
+  { key: 'BH-Morton-Patent-2021', title: 'US10948045B2 — Nuovo Pignone (Baker Hughes): Morton効果の能動バランサ抑制特許', url: 'https://patents.google.com/patent/US10948045B2/en', primary: true },
+  { key: 'TPS-deJongh-2008', title: 'de Jongh — The Synchronous Rotor Instability Phenomenon (Morton Effect), 37th TPS tutorial', url: 'https://oaktrust.library.tamu.edu/handle/1969.1/163122', primary: true },
 ]
 
 // ───────────────────────── 出典解説（注釈付き文献リスト用メタ） ─────────────────────────
@@ -459,6 +463,9 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'Machines-Balancing-2021': { cat: 'research', note: 'バランシング手法（影響係数/モーダル/能動）の分類総説。バランシング課題の学術側アンカー。' },
   'NLD-Rub-2020': { cat: 'research', note: 'ラビング数値モデルの包括レビュー。安定性・接触領域の研究活発度の証拠。' },
   'NLD-Crack-2024': { cat: 'research', note: 'クラックロータのモデル化と検出手法の最新総説。損傷診断課題の学術側アンカー。' },
+  'DeltaJS-HotSpot': { cat: 'tech', note: 'MADYN 2000 の hot spot stability chart（Morton/Newkirk 定常安定判定）。Morton解析を商用標準機能として提供する数少ない実例。' },
+  'BH-Morton-Patent-2021': { cat: 'tech', note: 'Morton効果を能動バランサで抑える Baker Hughes 系特許（2021成立）。OEMが設計対応を超えて対策デバイスまで進めた一次証拠。' },
+  'TPS-deJongh-2008': { cat: 'research', note: 'Morton効果の産業チュートリアルの定番（原初事例1996の当事者による講義）。実機事例と対策メニューの一次整理。' },
   // ── 規格・ガイドライン ──
   'API-TR684-1-2019': { cat: 'standard', note: 'ロータダイナミクスの実務チュートリアル正典。本ロードマップのL3分類（危険速度・応答／安定性／ねじり／バランシング）の骨格はここに接地。' },
   'ISO20816-1-2016': { cat: 'standard', note: '機械振動評価の統合規格（旧10816+7919）。「振動評価・状態監視」クラスタの背骨。' },

@@ -16,6 +16,20 @@ export interface AgendaPlayer {
   type: 'OEM' | '研究機関' | '大学'
 }
 
+// ベンチマーク格付け: 0=公表なし / 1=概念・解析のみ / 2=試験機実証 / 3=実機・商用。null=当該軸の評価対象外
+export type BenchLevel = 0 | 1 | 2 | 3
+export interface BenchRow {
+  name: string
+  levels: (BenchLevel | null)[] // benchAxes と同順
+  note?: string
+}
+export interface BenchResult {
+  date: string // 調査年月
+  summary: string[] // 主要所見（出典は knowledge 側 benchmark-<rq> に完全版）
+  rows: BenchRow[]
+  refs?: string[] // 代表出典キー（SOURCE_MAP）
+}
+
 export interface AgendaItem {
   id: string
   tier: AgendaTier
@@ -32,6 +46,7 @@ export interface AgendaItem {
   benchAxes: string[] // ベンチマーク比較軸（次ステップ）
   players: AgendaPlayer[] // ベンチマーク対象シード（未検証・調査で更新）
   gap?: string // 文献・規格の空白（あれば）
+  bench?: BenchResult // ベンチマーク調査結果（調査完了分のみ）
 }
 
 export const TIER_META: Record<AgendaTier, { name: string; desc: string }> = {
@@ -249,6 +264,28 @@ export const AGENDA: AgendaItem[] = [
       { name: 'SwRI', type: '研究機関' },
     ],
     gap: 'Morton効果の総説は2017年（ASME AMR）を最後に更新されておらず、予測実装・実測照合の体系的整理が空白。',
+    bench: {
+      date: '2026-07',
+      summary: [
+        '予測解析の公表実装は世界で実質3系統のみ — TAMU（過渡熱-弾性-油膜連成、TRC会員限定頒布）／MADYN 2000（定常 hot spot stability chart、v4.2〜標準機能）／DyRoBeS（Kirk系の定常しきい値判定オプション）。忠実度と入手性がトレードオフの構図。',
+        'OEMで「予測モデル＋実験検証＋対策デバイス特許（能動バランサ US10948045B2）」まで一次証拠が揃うのは Baker Hughes 系（旧GE O&G＋フィレンツェ大連合）のみ。',
+        '実機事例は10件超・機種横断（遠心圧縮機・一体ギアード・ターボエキスパンダ・大型TC・回転電機）。対策の定量的成功報告は4系統: ヒートバリアスリーブ／軸受形式変更（4ローブ化）／軸受幅縮小・給油温度調整／片持ち慣性変更。',
+        'フルスケール実機での発生回転数のブラインド予測照合は2015年以降の公表ゼロ。実験室で不安定発現まで再現したのはポワチエ大（Pprime）のみ — RQ-15 の5年ゴール（実測照合版 Morton 安定性マップ）は未占拠の空白。',
+        '日本からの公表は未確認（GTSJ 2020特集に言及の形跡のみ）。国内空白＝参入余地。',
+      ],
+      rows: [
+        { name: 'Texas A&M（Palazzolo／TRC）', levels: [3, 0, 2, 3], note: '過渡THD連成の最高忠実度＋自前リグでΔT・位相差を校正。ガス軸受版・CNN代理まで拡張。コードはTRC会員限定' },
+        { name: 'Baker Hughes（旧GE O&G＋フィレンツェ大）', levels: [3, 3, 3, 0], note: 'TPS 2015 実験検証＋JEGTP 2019 反復連成モデル＋能動バランサ特許。設計組込みの一次証拠が最も厚い' },
+        { name: 'Delta JS（MADYN 2000）', levels: [3, 3, 2, 3], note: 'THDベース定常安定判定を商用標準機能化。Cryostar エキスパンダ事例（GT2008）を対策比較込みで公表' },
+        { name: 'DyRoBeS／Kirk 系譜（Virginia Tech）', levels: [3, 3, 1, 3], note: '定常しきい値型の高速設計ツール。1990年代からの事例蓄積。簡易ゆえ照合の深さは限定的' },
+        { name: 'ポワチエ大 Pprime（Arghir）＋EDF', levels: [1, 0, 2, 0], note: '唯一、実験室で熱不安定の発現・ヒステリシス・接触到達まで再現（2020）。予測との定量照合は未公表' },
+        { name: 'De Jongh 系譜（Delaval-Stork→EthosEnergy）', levels: [1, 3, 2, 0], note: '原初事例（1996）とヒートバリアスリーブ対策（1998）の本家。TPSチュートリアルの定番講師' },
+        { name: 'Murphy & Lorenz（RMA 系譜）', levels: [1, 3, 1, 0], note: '簡易判定法（2010）＋軸受換装のみで解決した事例（GT2011）。XLRotor 製品機能としては未確認' },
+        { name: '西安交通大学', levels: [1, 0, 0, 0], note: '3D過渡熱モデル→片持ちロータ設計指針（2026年まで継続中）' },
+        { name: 'その他OEM（Everllence・MCO・Atlas Copco・EEE）', levels: [0, 0, 0, 0], note: 'Morton関連の公表を確認できず（不在証明ではない。内製保有の可能性は残る）' },
+      ],
+      refs: ['Tong-Morton-AMR-2017', 'DeltaJS-HotSpot', 'BH-Morton-Patent-2021', 'TPS-deJongh-2008'],
+    },
   },
 
   // ───────────── TIER B: 需要立ち上がりが確定的 ─────────────

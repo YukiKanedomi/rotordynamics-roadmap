@@ -832,24 +832,68 @@ function AgendaView() {
                 <div className="ag-bench">
                   <div className="ag-bh">
                     <b>BENCHMARK</b>
-                    <span className="ag-status">未実施</span>
+                    {a.bench ? (
+                      <span className="ag-status done">調査済 {a.bench.date}</span>
+                    ) : (
+                      <span className="ag-status">未実施</span>
+                    )}
                     <span className="ag-link">
                       {a.drivers.join(' ')} ／ {a.milestones.join(' ')}
                     </span>
                   </div>
                   <div className="ag-axes">
                     {a.benchAxes.map((x, i) => (
-                      <span key={i} className="ag-ax">{x}</span>
+                      <span key={i} className="ag-ax"><b>A{i + 1}</b> {x}</span>
                     ))}
                   </div>
-                  <div className="ag-players">
-                    {a.players.map((p) => (
-                      <span key={p.name} className={'ag-pl t-' + (p.type === 'OEM' ? 'oem' : p.type === '大学' ? 'uni' : 'lab')}>
-                        <i>{p.type}</i>
-                        {p.name}
-                      </span>
-                    ))}
-                  </div>
+                  {a.bench ? (
+                    <>
+                      <ul className="bx-summary">
+                        {a.bench.summary.map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                      <div className="bx-wrap">
+                        <table className="bx-grid">
+                          <thead>
+                            <tr>
+                              <th className="bx-name-h">格付け（●実機・商用 ◐試験機実証 ○概念・解析 —公表なし ・対象外）</th>
+                              {a.benchAxes.map((_, i) => (
+                                <th key={i}>A{i + 1}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {a.bench.rows.map((r) => (
+                              <tr key={r.name}>
+                                <td className="bx-name">
+                                  {r.name}
+                                  {r.note && <small>{r.note}</small>}
+                                </td>
+                                {r.levels.map((lv, i) => (
+                                  <td key={i} className={'bx-lv l' + (lv ?? 'x')}>
+                                    {lv === 3 ? '●' : lv === 2 ? '◐' : lv === 1 ? '○' : lv === 0 ? '—' : '・'}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {a.bench.refs && a.bench.refs.length > 0 && (
+                        <div className="bx-refs">代表出典: <Cite refs={a.bench.refs} /></div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="ag-players">
+                      {a.players.map((p) => (
+                        <span key={p.name} className={'ag-pl t-' + (p.type === 'OEM' ? 'oem' : p.type === '大学' ? 'uni' : 'lab')}>
+                          <i>{p.type}</i>
+                          {p.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </article>
             ))}
