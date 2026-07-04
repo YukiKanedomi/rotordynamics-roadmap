@@ -142,9 +142,27 @@ function useIsMobile() {
   return m
 }
 
+/* PC表示切替: viewport meta を width=1360 に切替え、メディアクエリごとデスクトップ描画にする
+   （モバイルブラウザの「PC版サイト」相当。ピンチズーム可・localStorage 保持・?pc=1 でも有効化） */
+const VIEWPORT_MOBILE = 'width=device-width, initial-scale=1.0, viewport-fit=cover'
+const VIEWPORT_PC = 'width=1360'
+function usePcMode() {
+  const [pc, setPc] = useState(() => {
+    if (typeof location !== 'undefined' && location.search.includes('pc=1')) return true
+    try { return localStorage.getItem('rd-pcmode') === '1' } catch { return false }
+  })
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="viewport"]')
+    if (meta) meta.setAttribute('content', pc ? VIEWPORT_PC : VIEWPORT_MOBILE)
+    try { localStorage.setItem('rd-pcmode', pc ? '1' : '0') } catch { /* noop */ }
+  }, [pc])
+  return [pc, setPc] as const
+}
+
 /* ═════════════════════════ App ═════════════════════════ */
 export default function App() {
   const isMobile = useIsMobile()
+  const [pcMode, setPcMode] = usePcMode()
   const [tab, setTab] = useState<Tab>(() => {
     const h = typeof location !== 'undefined' ? (location.hash.replace('#', '') as Tab) : 'board'
     return (TABS.map(([k]) => k) as string[]).includes(h) ? h : 'board'
@@ -180,6 +198,10 @@ export default function App() {
             {label}
           </button>
         ))}
+        <button className={'pcbtn' + (pcMode ? ' on' : '')} onClick={() => setPcMode(!pcMode)}
+          title="モバイルでもPCレイアウトを表示（ピンチズーム可）">
+          {pcMode ? 'MOBILE表示に戻す' : 'PC表示'}
+        </button>
         <span className="nav-note">実線=〜2035 ／ 破線=2035〜 ／ 定量は一次資料のみ</span>
       </nav>
 
