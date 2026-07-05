@@ -365,6 +365,9 @@ export const SOURCES: SourceRef[] = [
   { key: 'DeltaJS-HotSpot', title: 'Delta JS — Hot Spot Stability Analysis (Morton/Newkirk), MADYN 2000 標準機能', url: 'https://www.delta-js.ch/en/engineering/rotordynamic-analyses/hot-spot-stability-analysis/', primary: true },
   { key: 'BH-Morton-Patent-2021', title: 'US10948045B2 — Nuovo Pignone (Baker Hughes): Morton効果の能動バランサ抑制特許', url: 'https://patents.google.com/patent/US10948045B2/en', primary: true },
   { key: 'TPS-deJongh-2008', title: 'de Jongh — The Synchronous Rotor Instability Phenomenon (Morton Effect), 37th TPS tutorial', url: 'https://oaktrust.library.tamu.edu/handle/1969.1/163122', primary: true },
+  // ── 2026-07-05 RQ-01/RQ-02 ベンチマーク（代表出典） ──
+  { key: 'TAMU-GFB-SideFeed-2009', title: 'Kim & San Andrés — GFBロータの渦動と側圧効果（WFR実測, ASME JEGTP 2009）', url: 'https://asmedigitalcollection.asme.org/gasturbinespower/article-abstract/131/1/012501/466131/Effect-of-Side-Feed-Pressurization-on-the-Dynamic', primary: true },
+  { key: 'Calnetix-Drop-JEGTP-2007', title: 'Calnetix — AMBロータドロップ試験と解析予測（ASME JEGTP 2007）', url: 'https://asmedigitalcollection.asme.org/gasturbinespower/article-abstract/129/2/522/477793/Test-Results-and-Analytical-Predictions-for-Rotor', primary: true },
 ]
 
 // ───────────────────────── 出典解説（注釈付き文献リスト用メタ） ─────────────────────────
@@ -466,6 +469,8 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'DeltaJS-HotSpot': { cat: 'tech', note: 'MADYN 2000 の hot spot stability chart（Morton/Newkirk 定常安定判定）。Morton解析を商用標準機能として提供する数少ない実例。' },
   'BH-Morton-Patent-2021': { cat: 'tech', note: 'Morton効果を能動バランサで抑える Baker Hughes 系特許（2021成立）。OEMが設計対応を超えて対策デバイスまで進めた一次証拠。' },
   'TPS-deJongh-2008': { cat: 'research', note: 'Morton効果の産業チュートリアルの定番（原初事例1996の当事者による講義）。実機事例と対策メニューの一次整理。' },
+  'TAMU-GFB-SideFeed-2009': { cat: 'research', note: 'フォイル軸受ロータの渦動比（WFR=0.5/0.33等）定量実測と側圧による安定化。A1（オンセット実測公表）の世界的にほぼ唯一の一次。' },
+  'Calnetix-Drop-JEGTP-2007': { cat: 'research', note: 'AMBフライホイールの全速ドロップ試験（40回超）と解析予測の照合。ドロップ試験条件を査読レベルで公表した稀少例。' },
   // ── 規格・ガイドライン ──
   'API-TR684-1-2019': { cat: 'standard', note: 'ロータダイナミクスの実務チュートリアル正典。本ロードマップのL3分類（危険速度・応答／安定性／ねじり／バランシング）の骨格はここに接地。' },
   'ISO20816-1-2016': { cat: 'standard', note: '機械振動評価の統合規格（旧10816+7919）。「振動評価・状態監視」クラスタの背骨。' },
