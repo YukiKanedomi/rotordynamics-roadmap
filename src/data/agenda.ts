@@ -401,7 +401,7 @@ export const AGENDA: AgendaItem[] = [
       '段数-スパン-危険速度のトレードオフチャートと、低MWガスでのドライガスシール/ラビリンス動特性の設計データ整備。',
     whyNow:
       'IEA GHR 2025は発表ベースを下方修正したがFID済4Mtpaは維持——実需の立ち上がりは2030年前後に確度高く来る。機械設計の準備期間として今が適期。',
-    sources: ['IEA-GHR-2025', 'IEA-GHR-2025-update'],
+    sources: ['IEA-GHR-2025'],
     benchAxes: ['水素専用圧縮機の受注/実証公表', 'インテグラルギア型の段数・周速レンジ', '低MWガスのシール動特性データ公表', 'API 617準拠設計の公開度'],
     players: [
       { name: 'Siemens Energy', type: 'OEM' },

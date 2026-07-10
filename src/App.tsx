@@ -69,7 +69,7 @@ const KPIS: {
   col?: string
 }[] = [
   { k: 'DC POWER DEMAND', v: <>415<small> → </small><span className="up">945</span><small> TWh 2030</small></>, src: 'IEA Energy & AI (2025)', srcKey: 'IEA-EnergyAI-2025', pts: '0,22 40,20 80,17 120,13 160,9 200,5 250,2', col: 'var(--ok)' },
-  { k: 'H2 ANNOUNCED PIPELINE', v: <>49<small> → </small><span className="dn">37</span><small> Mtpa</small></>, src: 'IEA GHR 2025 — 史上初の下方修正', srcKey: 'IEA-GHR-2025-update', pts: '0,6 60,5 120,8 180,14 250,20', col: 'var(--warn)' },
+  { k: 'H2 ANNOUNCED PIPELINE', v: <>49<small> → </small><span className="dn">37</span><small> Mtpa</small></>, src: 'IEA GHR 2025 — 史上初の下方修正', srcKey: 'IEA-GHR-2025', pts: '0,6 60,5 120,8 180,14 250,20', col: 'var(--warn)' },
   { k: 'GT ORDER BACKLOG', v: <>100<small> GW ／ SOLD-OUT 2031</small></>, src: 'GE Vernova 2026-Q1（二次）', srcKey: 'GEV-Backlog-2026', pts: '0,23 50,21 100,17 150,12 200,7 250,3', col: 'var(--navy)' },
   { k: 'GRID INERTIA PROCURED (UK)', v: <>36<small> GVA·s ／ 2026 全量運開</small></>, src: 'NESO Stability Pathfinder', srcKey: 'NESO-Stability-2025' },
   { k: 'MOTOR SPECIFIC POWER', v: <>13.2<small> kW/kg @96% ／ EIS 2035–40</small></>, src: 'NASA EAP (2023)', srcKey: 'NASA-EAP-2023' },

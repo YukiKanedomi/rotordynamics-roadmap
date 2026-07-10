@@ -1,5 +1,5 @@
 // ローターダイナミクス技術ロードマップのデータモデル（source of truth）。
-// 元データ: experts/rotordynamics/knowledge/topics/roadmap-rotating-machinery.md（2026-07-02 再調査反映）
+// 元データ: experts/rotordynamics/knowledge/topics/roadmap-rotating-machinery.md（2026-07-11 品質パス反映）
 
 export type Confidence = '確立' | '推定' | '仮説'
 export type Horizon = '〜2030' | '〜2035' | '2035〜'
@@ -56,7 +56,7 @@ export interface TopicLink {
   summary: string
 }
 
-// ───────────────────────── ドライバ（5本柱） ─────────────────────────
+// ───────────────────────── ドライバ（6本柱: D1–D5＋D6） ─────────────────────────
 export const DRIVERS: Driver[] = [
   {
     id: 'D1',
@@ -85,16 +85,16 @@ export const DRIVERS: Driver[] = [
     name: 'エネルギー転換',
     short: '水素・アンモニア・e-fuel・CCUS',
     trends: [
-      { text: 'IEA: 2030年までに稼働確度の高い低排出水素 4 Mtpa 超(FID済)、計画電解装置の過半は稼働目標年を超過(slip)', confidence: '確立', source: 'IEA-GHR-2025' },
-      { text: '【2026-07下方修正】GHR 2025: 発表ベース2030年見通しが49→37 Mtpaへ史上初の下方修正。Fortescue等の大型中止、米45V短縮。FID済4 Mtpaは維持', confidence: '確立', source: 'IEA-GHR-2025-update' },
+      { text: 'IEA: 2030年の稼働確度の高い低排出水素はFID済＋稼働中で 4.2 Mtpa（2024年実績の約5倍）、計画電解装置の過半は稼働目標年を超過(slip)', confidence: '確立', source: 'IEA-GHR-2025' },
+      { text: '【2026-07下方修正】GHR 2025: 発表ベース2030年見通しが49→37 Mtpaへ史上初の下方修正。Fortescue等の大型中止、米45V短縮。FID済分は維持', confidence: '確立', source: 'IEA-GHR-2025' },
       { text: 'clean firm powerとして地熱も拡大: IEAは2050年最大800GW、Fervo Cape Station 100MWが2026-10送電開始予定', confidence: '確立', source: 'IEA-Geothermal-2024' },
       { text: '日本のアンモニア燃料: 2030年 300万t → 2050年 3,000万t、電力1%(2030)→10%(2050)。GE×IHI が F級GTで100%専焼を2030年商用化', confidence: '確立', source: 'GEV-IHI-NH3-2025' },
-      { text: '主要4OEMが全機種で最低30%水素混焼、100%水素は2028–2035ロードマップ', confidence: '確立', source: 'GreenGasTurbines-OEM-2026' },
+      { text: '主要4OEMが全機種で最低30%水素混焼、100%水素は2028–2035ロードマップ（出典は二次まとめ＝各OEM一次への差し替え待ち）', confidence: '推定', source: 'GreenGasTurbines-OEM-2026' },
     ],
-    demandShift: '水素遠心圧縮機（低分子量ゆえ多段・高周速・長スパン→インテグラルギア型が有力）、CO2/超臨界CO2圧縮機（高密度ゆえ6–10段・サブシンクロナス顕在化）、水素・アンモニアGT、膨張機。',
+    demandShift: '水素遠心圧縮機（低分子量ゆえ多段・高周速・長スパン→インテグラルギア型が有力）、CO2/超臨界CO2圧縮機（高密度ゆえ6–10段・サブシンクロナス顕在化）、水素・アンモニアGT、膨張機、地熱タービン・ORC膨張機。',
     milestones: [
-      { id: 'D2-1', title: '水素遠心圧縮機の危険速度/SM設計（軸分割）', horizon: '〜2030', confidence: '確立', rd: ['critspeed', 'seal'], detail: '水素は分子量極小・音速高く段あたり圧力上昇が小さい→多段・長スパン化で危険速度が低下。インテグラルギアで軸を分割し各軸短スパン化。【2026-07】本格需要の立ち上がりはGHR 2025下方修正・slip連動で2030–2035へ後ろ倒しが現実線。', sources: ['IEA-GHR-2025', 'IEA-GHR-2025-update'], topics: ['separation-margin', 'clearance-excitation-thomas-alford'] },
-      { id: 'D2-2', title: 'CO2圧縮機(CCUS,6–10段)の超臨界共振回避＋安定性基準', horizon: '〜2035', confidence: '確立', rd: ['stability', 'seal'], detail: '高密度ゆえインペラ固有振動数が低下→共振リスク増、段あたりヘッド制限で6–10段、サブシンクロナス増大。スワールブレーキ／ダンパシールで対策。実測ベンチマーク: 吐出20 MPaG・8段でlog dec 1.24→ISFDで1.33。', sources: ['GPPS-CO2IGC', 'Baba-2020-GPPS', 'ASME-SwirlBrake-2023'], topics: ['clearance-excitation-thomas-alford', 'rotor-stator-rub'] },
+      { id: 'D2-1', title: '水素遠心圧縮機の危険速度/SM設計（軸分割）', horizon: '〜2030', confidence: '確立', rd: ['critspeed', 'seal'], detail: '水素は分子量極小・音速高く段あたり圧力上昇が小さい→多段・長スパン化で危険速度が低下。インテグラルギアで軸を分割し各軸短スパン化。【2026-07】本格需要の立ち上がりはGHR 2025下方修正・slip連動で2030–2035へ後ろ倒しが現実線（時期は推定）。', sources: ['IEA-GHR-2025'], topics: ['separation-margin', 'clearance-excitation-thomas-alford'] },
+      { id: 'D2-2', title: 'CO2圧縮機(CCUS,6–10段)の超臨界共振回避＋安定性基準', horizon: '〜2035', confidence: '確立', rd: ['stability', 'seal'], detail: '高密度ゆえインペラ固有振動数が低下→共振リスク増、段あたりヘッド制限で6–10段、サブシンクロナス増大。スワールブレーキ／ダンパシールで対策。実測ベンチマーク: 吐出20 MPaG・8段でlog dec 1.24→ISFDで1.33。', sources: ['Baba-2020-GPPS', 'ASME-SwirlBrake-2023'], topics: ['clearance-excitation-thomas-alford', 'rotor-stator-rub'] },
       { id: 'D2-3', title: '水素ドライガスシール・低MW励振の動特性DB', horizon: '〜2035', confidence: '推定', rd: ['seal'], detail: '低分子量ガスでのシール起因クロスカップル係数の実測データベース化。水素経済向けドライガスシール再設計。', topics: ['clearance-excitation-thomas-alford'] },
       { id: 'D2-4', title: 'NH3・H2 100%GTの燃焼変更に伴う軸系影響評価', horizon: '〜2035', confidence: '確立', rd: ['torsional', 'critspeed'], detail: '燃料多様化に伴う横振動・ねじり振動への影響評価。', sources: ['GEV-IHI-NH3-2025'] },
       { id: 'D2-5', title: 'sCO2発電商用機の高密度ロータダイナミクス対応', horizon: '2035〜', confidence: '仮説', rd: ['stability', 'bearing'], detail: '5,000–10,000 psi 超でガス密度が水に近づく。ダンパシール単独で不足する領域への支持/ダンパ新方式。', sources: ['TAMU-sCO2-Tutorial'] },
@@ -110,8 +110,9 @@ export const DRIVERS: Driver[] = [
       { text: 'DC電力需要 2024年 415 TWh → 2030年 約945 TWh（世界電力の~1.5%→~3%）。AI特化サーバが増分のほぼ半分', confidence: '確立', source: 'IEA-EnergyAI-2025' },
       { text: 'behind-the-meter／オンサイト発電が2025年以降主流化、82 GW規模がannounce。短納期ガスタービン採用拡大', confidence: '確立', source: 'Cleanview-BTM-2025' },
       { text: 'DC液冷市場は2030年に約150–190億ドル、CAGR 20–26%（調査会社で幅大＝要裏取り）', confidence: '推定', source: 'RnM-DCLiquid-2025' },
-      { text: 'GE VernovaのGT受注残100 GW到達（2026-Q1）、重構造GTは2030–31年まで完売・リードタイム約3年。AI/DCが受注残の約20%', confidence: '確立', source: 'GEV-Backlog-2026' },
+      { text: 'GE Vernovaのガス発電 受注残＋スロット予約が83→100 GW（2026-Q1・一次確認済み）、年末までに110 GW以上の見通し。AI/DC約20%・重構造GT2030–31完売は決算説明会由来の二次報道', confidence: '確立', source: 'GEV-Backlog-2026' },
       { text: 'SMR×DC: Microsoft-TMI再稼働（Crane, 2027運開へ前倒し）、Google-Kairos Hermes2（2030）、Amazon-X-energy 5GW目標（2039）＋KHNP/Doosan量産提携', confidence: '確立', source: 'Constellation-Crane-2025' },
+      { text: '【2026-07】電源の両方向が同時進行: Oracle Project JupiterはBloom SOFC最大2.45 GWで計画GT+ディーゼルを置換（SOFC侵食の初の旗艦実例）、一方でKodiak×Baker HughesがDC向けGT初期約1 GW（最大1.8 GW）供給枠組み', confidence: '確立', source: 'Oracle-Bloom-2026' },
     ],
     demandShift: '大容量チラー用 油フリー磁気軸受遠心圧縮機（Danfoss Turbocor等が標準化）、DC電源用エアロデリバティブGT＋発電機（高速起動・系統追従）、SMR用中型蒸気タービン（標準化・量産）、低GWP冷媒対応の大型・低回転インペラ、廃熱回収sCO2/ORC（長期）。SOFCが発電機需要を一部代替する不確実変数。',
     milestones: [
@@ -120,9 +121,9 @@ export const DRIVERS: Driver[] = [
       { id: 'D3-3', title: 'DC電源用エアロデリバティブGT＋発電機の高速起動・系統追従', horizon: '〜2035', confidence: '確立', rd: ['torsional', 'stability'], detail: 'フリーパワータービン構成・急速起動・系統追従。ねじり振動・短絡トルク・SSR（subsynchronous resonance）対策、頻繁起動停止の疲労。', sources: ['Cleanview-BTM-2025'] },
       { id: 'D3-4', title: 'sCO2/ORC廃熱回収の実用化', horizon: '2035〜', confidence: '仮説', rd: ['stability', 'bearing'], detail: '臨界点近傍の実在気体効果下での圧縮機ロータダイナミクス・軸受/シール動特性。DCのGPU廃熱は低温でtrans-critical ORCが優位との比較も。' },
       { id: 'D3-5', title: 'センサレス自己診断AMBの標準化', horizon: '2035〜', confidence: '推定', rd: ['bearing', 'monitoring'], detail: 'AMB内蔵センサ・電流情報によるモデルベースのタッチダウン予知・自己診断。' },
-      { id: 'D3-7', title: 'AIデータセンター負荷急変→発電機ねじり疲労の評価', horizon: '〜2035', confidence: '確立', rd: ['torsional'], detail: 'AI学習サイクルで定格最大70%の電力急変が、同期発電機タービン軸のサブシンクロナス帯ねじり振動を励起。周波数偏差≤1.5 Hz制約とGoodman線図で疲労寿命を評価（preprint段階）。短絡過渡トルク・SSRも古典機構として連なる。', sources: ['AIDC-Torsional-2026', 'ASME-GT1996-ShortCircuitTorsion'] },
+      { id: 'D3-7', title: 'AIデータセンター負荷急変→発電機ねじり疲労の評価', horizon: '〜2035', confidence: '仮説', rd: ['torsional'], detail: 'AI学習サイクルで定格最大70%の電力急変が、同期発電機タービン軸のサブシンクロナス帯ねじり振動を励起するとの提案（preprintのみ＝仮説扱い。査読出版を確認したら格上げ）。短絡過渡トルク・SSRの古典機構自体は確立。', sources: ['AIDC-Torsional-2026', 'ASME-GT1996-ShortCircuitTorsion'] },
       { id: 'D3-8', title: 'SMR用中型蒸気タービンの標準化・量産＋再稼働機の経年ロータ再評価', horizon: '〜2035', confidence: '確立', rd: ['torsional', 'critspeed'], detail: '50–300MWe級蒸気タービン発電機トレインの標準化・量産という新需要形態（従来の1000MWe級一品設計と異なる）。再稼働案件（Crane CEC等）では経年ロータのバランシング・ねじり（系統SSR含む）再評価が実務課題。', sources: ['Constellation-Crane-2025', 'Kairos-TVA-2025', 'Xenergy-Amazon-2025'] },
-      { id: 'D3-6', title: '燃料電池台頭による発電機需要侵食シナリオの管理', horizon: '2035〜', confidence: '推定', rd: ['digital'], detail: 'SOFC（Bloom等）がDC主電源として急拡大すると回転機(GT/発電機)需要を一部代替。DeepSeek型のAI効率化による電力需要下振れも同格の不確実変数。市場リスク項目。' },
+      { id: 'D3-6', title: '燃料電池台頭による発電機需要侵食シナリオの管理', horizon: '2035〜', confidence: '推定', rd: ['digital'], detail: 'SOFC（Bloom等）がDC主電源として急拡大すると回転機(GT/発電機)需要を一部代替。【2026-07】Oracle Project Jupiter（Bloom SOFC最大2.45 GWで計画GTを置換）が初の旗艦実例＝不確実変数から実例つきリスクへ。DeepSeek型のAI効率化による電力需要下振れも同格の不確実変数。', sources: ['Oracle-Bloom-2026'] },
     ],
   },
   {
@@ -133,7 +134,7 @@ export const DRIVERS: Driver[] = [
       { text: 'FC用エアコンプレッサは非接触エアフォイル軸受で最大10万rpm級、先進設計は15万rpm超、オイルフリー9kg以下。IHIが2023年に従来比3.5倍出力の100kW級を発表', confidence: '確立', source: 'IHI-eTurboComp-2023' },
       { text: 'NASA 電動推進モータ最低目標 12 kW/kg（市販約2 kW/kg）、UIUC機で15 kW/kg・効率96%超。GEがMW級ハイブリッド推進を45,000ft模擬試験', confidence: '確立', source: 'NASA-EAP-NTRS' },
       { text: '舶用は IMO 2050脱炭素で e-アンモニア／メタノールが2030年頃から急拡大。ただし実施措置（Net-Zero Framework）の採択は2025-10に1年延期', confidence: '推定', source: 'IMO-NZF-Delay-2025' },
-      { text: 'eVTOLの現実線: 欧州独立系2社消滅（Lilium清算・Volocopter売却）。Joby TC 2026年後半見込み・商用2027〜。EHangは有償遊覧を2026-03開始', confidence: '確立', source: 'Joby-Stage4-2026' },
+      { text: 'eVTOLの現実線: 欧州独立系2社消滅（Lilium清算・Volocopter売却）。Joby TC 2026年後半見込み・【2026-07】eIPP選定で型式証明前の早期運航を2026年内に米10州で開始予定。EHangは有償遊覧を2026-03開始', confidence: '確立', source: 'Joby-eIPP-2026' },
       { text: '宇宙: 2025年の軌道打上げ329回（過去最多）。再使用化でターボポンプが疲労・繰返し熱勾配・サブシンクロナスの繰返し運用設計へ転換', confidence: '確立', source: 'SpaceNews-Launch-2025' },
     ],
     demandShift: '超高速・軽量・高出力密度・オイルフリーが共通ベクトル。FCエアコンプレッサ、電動推進ファン/モータ、航空用ギアボックス、ターボジェネレータ、再使用ロケットターボポンプ、防衛用小型ターボジェット。',
@@ -157,8 +158,8 @@ export const DRIVERS: Driver[] = [
     trends: [
       { text: 'ロータ系の不確かさ定量化(UQ)が2023年に体系化（PCE/Kriging/Monte Carlo/区間/Bayesian）。危険速度の確率論的評価が実装段階', confidence: '確立', source: 'Fu-MSSP-UQreview-2023' },
       { text: 'デジタルツインの中核はサロゲート＋PINN。ただしロータダイナミクス専用のリアルタイムDTはまだ事例希薄', confidence: '推定', source: 'TGM-AIEng-2026' },
-      { text: '油フリー磁気軸受市場でAMBが最大セグメント。圧電駆動可動SFD等の能動制御が2024に活発。CFRP/鋼ハイブリッド軸が高速化を後押し', confidence: '確立', source: 'JSV-PiezoSFD-2024' },
-      { text: 'フォイル軸受の実装レンジが跳躍: Garrett が25–1,750 kWcの油フリー遠心圧縮機をHVAC向けに製品化、量産2026年後半。FC数十kW→冷凍MWc級へ', confidence: '確立', source: 'Garrett-OilFree-2026' },
+      { text: '圧電駆動可動SFD等の能動/セミアクティブ制御が2024に活発。CFRP/鋼ハイブリッド軸が高速化を後押し（AMB市場構成の断定は調査会社二次のため推定扱い）', confidence: '確立', source: 'JSV-PiezoSFD-2024' },
+      { text: 'フォイル軸受の実装レンジが跳躍: Garrett が25–1,750 kWcの油フリー遠心圧縮機をHVAC向けに製品化、量産2026年後半。1,250 kWc大容量機（DC・産業冷却向け）も発表。FC数十kW→冷凍MWc級へ', confidence: '確立', source: 'Garrett-OilFree-2026' },
       { text: 'センサレスAMB（KAIST, IEMDC 2025）・AMBドロップ後の再浮上(recontrol)評価が進展', confidence: '確立', source: 'KAIST-SensorlessAMB-2025' },
     ],
     demandShift: 'UQ/サロゲート/PINN/デジタルツイン、AI状態監視・予知保全、能動/セミアクティブ振動制御、CFRP・AMロータ、規格整備が全ドライバを下支え。',
@@ -168,7 +169,7 @@ export const DRIVERS: Driver[] = [
       { id: 'D5-3', title: 'PINN/物理組込MLによる軸受・シール動特性係数推定', horizon: '〜2035', confidence: '推定', rd: ['digital', 'seal'], detail: '物理知識（軸受動力学・故障機構）を data-driven モデルに組込み、ロバスト性・汎化を高める。', sources: ['TGM-AIEng-2026'] },
       { id: 'D5-4', title: '圧電可動SFD等のセミアクティブ制御の実機適用', horizon: '〜2035', confidence: '確立', rd: ['stability', 'bearing'], detail: '圧電(PZT)駆動で油膜ギャップを能動可変し、危険速度通過時の突発不釣合い振動を抑制。', sources: ['JSV-PiezoSFD-2024'] },
       { id: 'D5-5', title: 'CFRP/鋼ハイブリッド軸・CFRPスリーブPMロータの高速化標準化', horizon: '〜2035', confidence: '確立', rd: ['critspeed'], detail: 'CFRPスリーブは鋼の約10倍の比強度で薄肉化・エアギャップ縮小・高回転化を可能に。熱変位低減・軽量化。', sources: ['JMP-CFRPshaft-2024'] },
-      { id: 'D5-6', title: 'API 617/684・ISO 20816/14839/21940 の継続改訂', horizon: '〜2035', confidence: '確立', rd: ['balancing', 'monitoring', 'bearing'], detail: 'API 617 8th でAMB Annex追加、ISO 14839-5(タッチダウン軸受)2022、ISO 20816への統合進展。【2026-07確認】ISO/CD 21940-12（弾性ロータバランシング）・ISO/DIS 21940-14 が改訂進行中。API 684はTR 684-1(2019)が現行。NERCがIBR近傍タービン発電機のSSTI評価（EMT解析）をガイドライン化(2024-12)。', sources: ['Swanson-Masala-API617-AMB', 'ISO14839-5-2022', 'ISO21940-12-CD', 'NERC-EMT-IBR-2024'], topics: ['standards-landscape'] },
+      { id: 'D5-6', title: 'API 617/684・ISO 20816/14839/21940 の継続改訂', horizon: '〜2035', confidence: '確立', rd: ['balancing', 'monitoring', 'bearing'], detail: 'API 617 8th でAMB Annex追加、ISO 14839-5(タッチダウン軸受)2022、ISO 20816への統合進展。【2026-07-11更新】ISO/DIS 21940-14はDIS投票終了（stage 40.60・2026-01締切）＝出版接近、ISO/CD 21940-12（弾性ロータバランシング）はCD継続。API 684はTR 684-1(2019)が現行。API 688はPD機械の脈動規格で「ねじり規格」ではない（呼称注意）。NERCがIBR近傍タービン発電機のSSTI評価（EMT解析）をガイドライン化(2024-12)。', sources: ['Swanson-Masala-API617-AMB', 'ISO14839-5-2022', 'ISO21940-12-CD', 'ISO21940-14-DIS', 'API688-2nd-2023', 'NERC-EMT-IBR-2024'], topics: ['standards-landscape'] },
       { id: 'D5-7', title: '流体-構造-熱-電磁フル連成＋オンラインUQのリアルタイムDT', horizon: '2035〜', confidence: '仮説', rd: ['digital', 'emag'], detail: '高忠実度マルチフィジックスを設計ループ内オンラインUQとともにリアルタイムDTへ統合。' },
       { id: 'D5-8', title: 'ガス/エアフォイル軸受機向けの新規API/ISO規格整備', horizon: '2035〜', confidence: '推定', rd: ['bearing', 'stability'], detail: 'AMBはAPI617 Annex＋ISO14839で枠組みがあるが、フォイル/ガス軸受の受入・適格性は規格ギャップが残る。', topics: ['standards-landscape'] },
       { id: 'D5-9', title: 'AMロータ量産適用とRD設計法／AI診断・DTの規格化', horizon: '2035〜', confidence: '推定', rd: ['digital', 'monitoring'], detail: '付加製造(AM)ロータ（内部冷却流路・一体造形）の量産適用とロータダイナミクス設計法整備、AI診断・DTの規格化。' },
@@ -183,7 +184,7 @@ export const DRIVERS: Driver[] = [
       { text: '独TenneT×Siemens Energy: フライホイール付き同期調相機を含む3系統（Mehrum, 2025運開）。豪AEMOも同期調相機を今後10年の系統安全の鍵と明記', confidence: '確立', source: 'TenneT-Siemens-FWSC-2024' },
       { text: '米ERCOT: 175 MVAr×2基をEPC発注（2027納入）。中国Dinglun 30MW・磁気浮上フライホイール120基が世界最大のFW発電所として系統接続', confidence: '確立', source: 'ANDRITZ-GEV-ERCOT-2025' },
     ],
-    demandShift: '再エネ増で系統の回転慣性が減り、「回転慣性という物理量を売る」回転機械＝同期調相機・フライホイールをTSO/ISOが調達。大型高慣性ロータ、フライホイール連結多スパン軸系、磁気浮上FWのAMB制御、既設タービン発電機の調相機転用（クラッチ改造→再RD評価）。リスク: グリッドフォーミングBESSによる代替。',
+    demandShift: '再エネ増で系統の回転慣性が減り、「回転慣性という物理量を売る」回転機械＝同期調相機・フライホイールをTSO/ISOが調達。大型高慣性ロータ、フライホイール連結多スパン軸系、磁気浮上FWのAMB制御、既設タービン発電機の調相機転用（クラッチ改造→再RD評価）。リスク: グリッドフォーミングBESSによる代替（NESO FRCR 2025 は最低保持慣性を120→102 GVA.sへ引き下げ提案＝非同期代替が進む一次シグナル）。',
     milestones: [
       { id: 'D6-1', title: '同期調相機の大量導入と高慣性ロータ設計の定型化', horizon: '〜2030', confidence: '確立', rd: ['torsional', 'critspeed'], detail: '英36 GVA.s全量運開(2026)・米ERCOT 2027納入。大型高慣性ロータのねじり/横振動設計、フライホイール付き機（独Mehrum型）の多スパン軸系危険速度・カップリング設計。', sources: ['NESO-Stability-2025', 'TenneT-Siemens-FWSC-2024', 'ANDRITZ-GEV-ERCOT-2025'] },
       { id: 'D6-2', title: '既設タービン発電機の調相機転用（クラッチ改造）再RD評価', horizon: '〜2030', confidence: '確立', rd: ['torsional', 'critspeed', 'balancing'], detail: '退役火力の発電機を同期調相機へ転用する際のクラッチ付き改造・軸系変更に伴う再ロータダイナミクス評価（危険速度・ねじり・バランシング）。', sources: ['AEMO-TPSS-2025'] },
@@ -206,13 +207,13 @@ export const VECTORS: Vector[] = [
 // ───────────────────────── ストーリー（冒頭ナラティブ＋権威アンカー） ─────────────────────────
 // refs は出典キー（SOURCE_MAP にあればリンク）または既存ナレッジ topic slug。
 export const NARRATIVE: { text: string; refs: string[] }[] = [
-  { text: '世界は脱炭素・電化・AIという3つの不可逆な潮流に同時に晒され、エネルギーと航空の双方でネットゼロ2050が政策目標として確定した。', refs: ['ICAO-LTAG-2022', 'IEA-GHR-2024'] },
+  { text: '世界は脱炭素・電化・AIという3つの潮流に同時に晒され、ICAO・IMO・主要国がネットゼロ2050を長期目標として掲げた——ただし拘束力は分野・地域で異なり、IMOは採択延期・米国は政策反転というボラティリティを内包する。', refs: ['ICAO-LTAG-2022', 'IMO-NZF-Delay-2025', 'OBBBA-2025'] },
   { text: 'その帰結として、回転機械への要求は「より高速・高出力密度・潤滑油フリー・極端な作動流体」へ一斉にシフトしている。', refs: ['NASA-EAP-2023', 'CleanHydrogenJU-SRIA-2022'] },
-  { text: '航空はMW級電動推進で電動機13 kW/kg級・2035年就航を狙い、軽量薄肉・超高速ロータが標準化する。', refs: ['NASA-EAP-2023', 'CleanAviation-SRIA-2024'] },
-  { text: 'エネルギー転換は水素・アンモニア・sCO2を主役に据え、低分子量ガスの多段長スパン圧縮機や、水の密度に迫る高密度sCO2ターボ機械を生む。', refs: ['CleanHydrogenJU-SRIA-2022', 'DOE-STEP-SwRI-2024'] },
-  { text: 'AIデータセンターは電力需要を2030年に倍増（415→945 TWh）させ、油フリー磁気軸受チラー圧縮機と液冷ポンプの需要を爆発させている。', refs: ['IEA-EnergyAI-2025', 'Uptime-GDCS-2025'] },
+  { text: '航空はMW級電動推進で電動機13 kW/kg級・2035–2040年就航を狙い、軽量薄肉・超高速ロータが標準化する。', refs: ['NASA-EAP-2023', 'CleanAviation-SRIA-2024'] },
+  { text: 'エネルギー転換は水素・アンモニア・sCO2を主役に据え（時期は政策で後ろ倒れつつ）、低分子量ガスの多段長スパン圧縮機や、水の密度に迫る高密度sCO2ターボ機械を生む。', refs: ['CleanHydrogenJU-SRIA-2022', 'IEA-GHR-2025', 'DOE-STEP-SwRI-2024'] },
+  { text: 'AIデータセンターは電力需要を2030年に倍増（415→945 TWh）させ、油フリー磁気軸受チラー圧縮機と液冷ポンプの需要を押し上げている（液冷の市場定量は要裏取り）。', refs: ['IEA-EnergyAI-2025', 'Uptime-GDCS-2025'] },
   { text: '再エネの拡大は同時に系統の回転慣性を減らし、「慣性という物理量を売る」同期調相機・フライホイールという新しい回転機械需要を生んでいる（英36 GVA.s契約・独フライホイール調相機・米ERCOT発注）。', refs: ['NESO-Stability-2025', 'TenneT-Siemens-FWSC-2024', 'AEMO-TPSS-2025'] },
-  { text: 'これら機種を超えて、進化方向は油フリー化・超高速/高出力密度・モータ一体化・作動流体の極端化・デジタル化の5本に収束する。', refs: ['DellaCorte-2012-MSSP', 'MDPI-AMB-Review-2025'] },
+  { text: 'これら機種を超えて、進化方向は油フリー化・超高速/高出力密度・モータ一体化・作動流体の極端化・デジタル化の5本——一段掘れば「減衰をどこから調達するか」という単一の収支問題——に収束する。', refs: ['DellaCorte-2012-MSSP', 'MDPI-AMB-Review-2025', 'ASME-Spakovszky-2023'] },
   { text: '結果としてロータダイナミクスには古典的難問が新条件で再来する——危険速度の超臨界通過と分離余裕、自励・サブシンクロナス安定性、シール/隙間の流体励起、電磁連成とねじり。', refs: ['API-TR684-1-2019', 'ASME-Spakovszky-2023'] },
   { text: 'ターボ機械の権威も「開発後段で顕在化する問題は本質的に動的で、減衰の定量化と流体-構造連成こそ最難関」と総括しており、課題の核心は一致している。', refs: ['ASME-Spakovszky-2023'] },
   { text: '解の方向は、磁気・ガス/フォイル軸受とダンパシール／スワールブレーキによる安定化、能動制御、そして不確かさ定量化(UQ)・デジタルツインでの確率論的設計に向かう。', refs: ['DellaCorte-NASA-2016', 'Fu-MSSP-UQreview-2023', 'DT-Sensors-2024'] },
@@ -271,7 +272,7 @@ export const TOPICS: TopicLink[] = [
 export const SOURCES: SourceRef[] = [
   { key: 'IEA-EnergyAI-2025', title: 'IEA — Energy and AI (DC電力 415→945 TWh, 2030)', url: 'https://www.iea.org/reports/energy-and-ai/executive-summary', primary: true },
   { key: 'IEA-FutureHeatPumps-2022', title: 'IEA — The Future of Heat Pumps (180M→600M台, 2030)', url: 'https://www.iea.org/reports/the-future-of-heat-pumps', primary: true },
-  { key: 'IEA-GHR-2025', title: 'IEA — Global Hydrogen Review 2025 (4 Mtpa+, slip)', url: 'https://www.iea.org/reports/global-hydrogen-review-2025', primary: true },
+  { key: 'IEA-GHR-2025', title: 'IEA — Global Hydrogen Review 2025（発表ベース49→37 Mtpa下方修正・FID済4.2 Mtpa）', url: 'https://www.iea.org/reports/global-hydrogen-review-2025/executive-summary', primary: true },
   { key: 'GEV-IHI-NH3-2025', title: 'GE Vernova × IHI — 100% ammonia combustion milestone', url: 'https://www.gevernova.com/news/press-releases/ihi-ge-vernova-achieve-milestone-100-ammonia', primary: true },
   { key: 'GreenGasTurbines-OEM-2026', title: 'Hydrogen-Ready Gas Turbines OEM Comparison 2026', url: 'https://www.greengasturbines.com/blog/hydrogen-ready-gas-turbines-oem-comparison', primary: true },
   { key: 'IHI-eTurboComp-2023', title: "IHI — World's lightest electric turbo compressor (100kW, air bearing)", url: 'https://www.ihi.co.jp/en/all_news/2023/technology/1199839_3531.html', primary: true },
@@ -284,7 +285,6 @@ export const SOURCES: SourceRef[] = [
   { key: 'JSV-PiezoSFD-2024', title: 'Piezoelectric driven split-pad squeeze film damper (JSV 2024)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S0022460X24000944', primary: true },
   { key: 'JMP-CFRPshaft-2024', title: 'CFRP/steel hybrid rotating shaft (J. Manuf. Proc. 2024)', url: 'https://www.sciencedirect.com/science/article/pii/S1526612524003001', primary: true },
   { key: 'Xu-IMechE-FoilRotor-2024', title: 'Rotordynamics of high-speed air compressor w/ gas foil bearings (IMechE 2024)', url: 'https://journals.sagepub.com/doi/10.1177/09544062231222974', primary: true },
-  { key: 'GPPS-CO2IGC', title: 'High-pressure CO2 integrally geared compressor (GPPS)', url: 'https://journal.gpps.global/Experimental-evaluation-of-performance-and-mechanical-reliability-for-high-pressure,124724,0,2.html', primary: true },
   { key: 'TAMU-sCO2-Tutorial', title: 'Turbomachinery for Super-Critical CO2 (TAMU tutorial)', url: 'https://oaktrust.library.tamu.edu/server/api/core/bitstreams/8be820c6-6221-4de8-8a90-5d079410b688/content', primary: true },
   { key: 'ASME-SwirlBrake-2023', title: 'Swirl Brake Design for Rotordynamic Stability (ASME 2023)', url: 'https://asmedigitalcollection.asme.org/openengineering/article/doi/10.1115/1.4062934/', primary: true },
   { key: 'Swanson-Masala-API617-AMB', title: 'New AMB Requirements in API 617 8th Edition (TAMU)', url: 'https://oaktrust.library.tamu.edu/handle/1969.1/162709', primary: true },
@@ -337,16 +337,27 @@ export const SOURCES: SourceRef[] = [
   { key: 'SpaceNews-Launch-2025', title: 'SpaceNews — 2025年軌道打上げ329回（過去最多, Falcon 9単独165回）', url: 'https://spacenews.com/spacex-china-drive-new-record-for-orbital-launches-in-2025/', primary: true },
   { key: 'Reuters-DroneJet-2026', title: 'Reuters — ドローン用ミニジェットエンジン供給不足（PBS生産5→8倍計画）', url: 'https://www.usnews.com/news/world/articles/2026-04-07/ukraines-attack-drone-fleet-faces-a-mini-jet-engine-supply-crunch', primary: true },
   { key: 'MAN-Helsinki-HP-2024', title: 'MAN — ヘルシンキ向け世界最大33MW空気熱源HP（油フリー磁気軸受HOFIM）', url: 'https://www.man-es.com/company/press-releases/press-details/2024/08/28/man-energy-solutions-to-supply-world-s-largest-air-to-water-heat-pump-for-helsinki-s-district-heating', primary: true },
-  { key: 'IEA-GHR-2025-update', title: 'IEA — GHR 2025（発表ベース49→37 Mtpaへ史上初の下方修正・FID済4Mtpa維持）', url: 'https://www.iea.org/reports/global-hydrogen-review-2025/executive-summary', primary: true },
   { key: 'OBBBA-2025', title: 'OBBBA（2025-07成立）— EV税額控除終了・45V短縮・ITC/PTC制限（Kirkland解説）', url: 'https://www.kirkland.com/publications/kirkland-alert/2025/08/one-big-beautiful-bill-act-brings-big-changes-to-green-energy-tax-credits', primary: true },
   { key: 'IEA-WEO-2025', title: 'IEA — World Energy Outlook 2025（CPS復活・米EV下方修正）', url: 'https://www.iea.org/reports/world-energy-outlook-2025/executive-summary', primary: true },
   { key: 'Joby-Stage4-2026', title: 'Joby — FAA型式証明Stage 4完了（2026-03）・TC 2026後半見込み', url: 'https://www.commercialuavnews.com/faa-regulation-certification-aam-joby-archer-electra', primary: true },
   { key: 'EHang-6K-2026', title: 'EHang — 広州・合肥で有償遊覧飛行開始（2026-03, SEC 6-K）', url: 'https://www.sec.gov/Archives/edgar/data/0001759783/000119312526262868/d123612dex991.htm', primary: true },
   { key: 'Lilium-End-2026', title: 'FlightGlobal — Lilium事業終了（プロトタイプ処分, 2026-04）・Volocopter売却', url: 'https://www.flightglobal.com/aerospace/2026/04/lilium-jets-journey-ends-on-scrapheap-as-prototypes-fail-to-sell/', primary: true },
-  { key: 'GEV-Backlog-2026', title: 'GE Vernova — GT受注残100 GW（2026-Q1）・2030–31年完売（決算報道, 一次直接確認未了）', url: 'https://rbnenergy.com/daily-posts/blog/backlog-natural-gas-turbines-expands-surging-demand-supply-constraints', primary: false },
+  { key: 'GEV-Backlog-2026', title: 'GE Vernova Q1 2026 — ガス発電 受注残＋スロット予約 83→100 GW・年末110 GW見通し（公式PR/8-K）', url: 'https://www.gevernova.com/news/press-releases/ge-vernova-reports-first-quarter-2026-financial', primary: true },
   { key: 'STEP-Phase1-2024', title: 'SwRI/GTI — STEP Demo Phase 1完了（実績500°C・27krpm・net~4MWe。715°C/10MWeはPhase 2目標）', url: 'https://www.swri.org/newsroom/press-releases/step-demo-pilot-plant-achieves-full-operational-conditions-phase-1-of-testing', primary: true },
   { key: 'IMO-NZF-Delay-2025', title: 'IMO — Net-Zero Framework採択を1年延期（2025-10, 再開2026）', url: 'https://www.imo.org/en/mediacentre/pressbriefings/pages/imo-net-zero-shipping-talks-to-resume-in-2026.aspx', primary: true },
-  { key: 'ISO21940-12-CD', title: 'ISO/CD 21940-12 — 弾性ロータバランシング改訂（CD段階）・DIS 21940-14', url: 'https://www.iso.org/standard/86180.html', primary: true },
+  { key: 'ISO21940-12-CD', title: 'ISO/CD 21940-12 — 弾性ロータバランシング改訂（CD段階）', url: 'https://www.iso.org/standard/86180.html', primary: true },
+  { key: 'ISO21940-14-DIS', title: 'ISO/DIS 21940-14 — バランス誤差評価（stage 40.60=DIS投票終了 2026-01・出版接近）', url: 'https://www.iso.org/standard/86197.html', primary: true },
+  { key: 'API688-2nd-2023', title: 'API Std 688 2nd Ed (2023) — 脈動・振動制御（PD機械）。「ねじり規格」ではない（呼称注意）', url: 'https://store.accuristech.com/standards/api-std-688?product_id=2574774', primary: true },
+  { key: 'Energies-Recontrol-2024', title: 'Recontrol evaluation after rotor drop (Energies 2024, 17(14):3457)', url: 'https://www.mdpi.com/1996-1073/17/14/3457', primary: true },
+  { key: 'Fortescue-Cancel-2025', title: 'Fortescue — Arizona/Gladstone 水素2案件中止（2025-07, $150M減損）', url: 'https://www.argusmedia.com/en/news-and-insights/latest-market-news/2713521-fortescue-scraps-us-australia-green-hydrogen-projects', primary: false },
+  { key: 'AEA-JapanNH3-Roadmap', title: '日本の燃料アンモニア・ロードマップ（300万t/2030→3,000万t/2050）', url: 'https://ammoniaenergy.org/articles/japans-road-map-for-fuel-ammonia/', primary: true },
+  { key: 'GFB-Review-IMechE-2024', title: 'Gas foil journal bearing compliant structures — comprehensive review (IMechE Part J 2024)', url: 'https://journals.sagepub.com/doi/10.1177/13506501241249839', primary: true },
+  { key: 'Joby-eIPP-2026', title: 'Joby — eIPP選定: 型式証明前の米国内早期運航を2026年内・10州で開始予定（一次PR 2026-03）', url: 'https://ir.jobyaviation.com/news-events/press-releases/detail/175/joby-to-begin-u-s-operations-in-2026-under-white-house-air', primary: true },
+  { key: 'Garrett-ChinaRefrig-2026', title: 'Garrett — 1,250 kWc 大容量油フリー遠心圧縮機（China Refrigeration Expo 2026）', url: 'https://www.globenewswire.com/news-release/2026/04/08/3269817/0/en/Garrett-Motion-Showcases-Breakthrough-Oil-Free-Centrifugal-Compressor-Portfolio-at-China-Refrigeration-Expo-2026.html', primary: true },
+  { key: 'Oracle-Bloom-2026', title: 'Oracle Project Jupiter — Bloom SOFC 最大2.45 GWで計画GT+ディーゼルを置換（2026-04）', url: 'https://www.oracle.com/news/announcement/oracle-borderplex-and-bloom-energy-to-power-project-jupiter-with-fuel-cell-technology-2026-04-27/', primary: true },
+  { key: 'Kodiak-BH-2026', title: 'Kodiak×Baker Hughes — DC向けGT複数年供給枠組み（初期約1 GW・最大1.8 GW, 2026-07）', url: 'https://www.globenewswire.com/news-release/2026/07/08/3323943/0/en/Kodiak-Gas-Services-Baker-Hughes-Announce-Multi-Year-Gas-Turbine-Order-Agreement-to-Support-U-S-Data-Center-Growth.html', primary: true },
+  { key: 'NESO-FRCR-2025', title: 'NESO FRCR 2025 — 最低保持慣性 120→102 GVA.s へ引き下げ提案（D6減衰シナリオの一次シグナル）', url: 'https://watt-logic.com/2025/06/18/should-neso-be-allowed-to-lower-its-minimum-inertia-requirement/', primary: false },
+  { key: 'NESO-14.9bn-2025', title: 'NESO — Stability Pathfinder Phase 3 の消費者便益 £14.9bn（2025–35, 契約額約£1.3bn）', url: 'https://www.neso.energy/news/eso-announces-new-contracts-deliver-over-ps14-billion-savings', primary: true },
   { key: 'Garrett-OilFree-2026', title: 'Garrett — フォイル軸受・油フリー遠心圧縮機 25–1,750 kWc（HVAC, 量産2026後半）', url: 'https://www.garrettmotion.com/news/media/press-release/garrett-motion-introduces-breakthrough-oil-free-centrifugal-compressor-technology-for-hvac-systems-at-ahr-expo-2026-in-las-vegas/', primary: true },
   { key: 'NERC-EMT-IBR-2024', title: 'NERC — EMT Studies for IBR ガイドライン（SSTI 5–60Hz・軸系ねじり保護, 2024-12）', url: 'https://www.nerc.com/globalassets/who-we-are/standing-committees/rstc/irps/reliability_guideline_recommended_practices_for_emt_studies_for_ibr_approved.pdf', primary: true },
   { key: 'KAIST-SensorlessAMB-2025', title: 'KAIST — センサレスAMB位置推定（IEMDC 2025 Best Oral）', url: 'https://kmatrix.kaist.ac.kr/sensorless-control-of-active-magnetic-bearings/', primary: true },
@@ -386,8 +397,7 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   // ── 政策・需要 ──
   'IEA-EnergyAI-2025': { cat: 'policy', note: 'DC電力 415→945 TWh(2030)の基準ケース。D3需要の定量的背骨。' },
   'IEA-FutureHeatPumps-2022': { cat: 'policy', note: 'ヒートポンプ世界ストック180M→600M台(2030,NZE)。D1のHP圧縮機需要の根拠。' },
-  'IEA-GHR-2025': { cat: 'policy', note: '低排出水素のFID済4Mtpa超と電解装置slip。水素圧縮機需要の「堅い部分」を規定。' },
-  'IEA-GHR-2025-update': { cat: 'policy', note: '発表ベース見通し49→37Mtpaへ史上初の下方修正。D2の時期後ろ倒しの根拠。' },
+  'IEA-GHR-2025': { cat: 'policy', note: 'FID済4.2 Mtpa（堅い部分）と発表ベース49→37 Mtpaへの史上初の下方修正（時期後ろ倒しの根拠）を同時に規定。' },
   'IEA-GHR-2024': { cat: 'policy', note: '水素需要97Mt(2023)・FID電解槽20GW。GHR2025で一部更新済みの基準点。' },
   'IEA-GEO-2025': { cat: 'policy', note: 'EV新車シェア40%超(2030)。e-axle市場$の代わりに使う一次プロキシ。' },
   'IEA-CCUS-2025': { cat: 'policy', note: 'CO2回収50→430Mt/年(2030パイプライン)。CO2圧縮機需要の一次根拠。' },
@@ -405,7 +415,7 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'HydrogenCouncil-Compass-2025': { cat: 'policy', note: '水素投資$110bn超のトラッキング。産業側の投資実態。' },
   // ── 技術実証・OEM ──
   'GEV-IHI-NH3-2025': { cat: 'tech', note: 'F級GTで100%アンモニア専焼の大規模試験達成・2030商用化目標。' },
-  'GreenGasTurbines-OEM-2026': { cat: 'tech', note: '主要4OEMの水素GTロードマップ比較。30%混焼〜100%専焼の到達点。' },
+  'GreenGasTurbines-OEM-2026': { cat: 'secondary', note: '主要4OEMの水素GTロードマップ比較（二次まとめ＝各OEM一次への差し替え待ち。確度は推定まで）。' },
   'IHI-eTurboComp-2023': { cat: 'tech', note: 'エア浮上ガス軸受100kW級・従来比3.5倍出力。FC空気系の油フリー到達点。' },
   'NASA-EAP-NTRS': { cat: 'tech', note: '電動推進モータ12kW/kg目標・15kW/kg実証。軽量超高速ロータ要求の原典。' },
   'NASA-EAP-2023': { cat: 'tech', note: 'MW級電動機13.2kW/kg@96%・EIS 2035-40。D4のKPIアンカー。' },
@@ -447,7 +457,6 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'ASME-SwirlBrake-2023': { cat: 'research', note: 'スワールブレーキのCFD設計法。シール励振対策の現代形。' },
   'SwRI-STEP-Rotordyn-2018': { cat: 'research', note: 'sCO2タービンのロータダイナミクス設計（ティルパッド＋SFD）。高密度機の設計実例。' },
   'TAMU-sCO2-Tutorial': { cat: 'research', note: 'sCO2ターボ機械の課題チュートリアル。高密度→強クロスカップリングの整理。' },
-  'GPPS-CO2IGC': { cat: 'research', note: '高圧CO2一体ギア圧縮機の実験評価（Baba-2020と同系）。' },
   'Xu-IMechE-FoilRotor-2024': { cat: 'research', note: 'フォイル軸受高速圧縮機のFSI＋伝達マトリクス解析フロー。' },
   'GFB-FCEV-CritSpeed-2023': { cat: 'research', note: 'FCEV圧縮機の危険速度はガスフォイル軸受が支配（空力剛性は無視可）。' },
   'Cryo-Turboexpander-2023': { cat: 'research', note: '175,000rpm極低温膨張機のRD検証。膨張機RDの数少ない査読一次。' },
@@ -455,7 +464,7 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'JMP-CFRPshaft-2024': { cat: 'research', note: 'CFRP/鋼ハイブリッド軸。高速化を支える材料側の進展。' },
   'MDPI-AMB-Review-2025': { cat: 'research', note: '磁気軸受R&Dの最新総説。self-sensing・bearingless等のフロンティア。' },
   'MDPI-EVS-13-4-65': { cat: 'research', note: 'EV用モータの多基準比較。e-axle高速化トレンドの学術側。' },
-  'AIDC-Torsional-2026': { cat: 'research', note: 'AI-DC負荷急変→発電機ねじり疲労（preprint段階と明記して使用）。' },
+  'AIDC-Torsional-2026': { cat: 'research', note: 'AI-DC負荷急変→発電機ねじり疲労の提案（preprintのみ＝仮説扱い。査読出版確認で格上げ予定）。' },
   'ASME-GT1996-ShortCircuitTorsion': { cat: 'research', note: '短絡過渡トルクの軸系ねじり（古典）。系統事象×ねじりの基礎。' },
   'Khatri-Hawkins-ISMB16': { cat: 'research', note: 'AMB圧縮機におけるAPI 617とISO 14839-3の突合。規格間ギャップの整理。' },
   'IFToMM-2026-CFP': { cat: 'research', note: '分野最大の国際会議の公式トピック分類（14項目）。AGENDA の課題空間を外部準拠させる第一の骨格。' },
@@ -478,10 +487,23 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'ISO21940-12-CD': { cat: 'standard', note: '弾性ロータバランシング規格の改訂進行中（CD段階）。バランシング・クラスタの現在地。' },
   'NERC-EMT-IBR-2024': { cat: 'standard', note: 'インバータ電源近傍のSSTI評価をEMT解析で推奨。系統側文書に軸系ねじり保護が明文化された画期。' },
   'Swanson-Masala-API617-AMB': { cat: 'standard', note: 'API 617 8th のAMB Annex解説。磁気軸受機の要求の入口。' },
+  // ── 2026-07-11 品質パス追加分 ──
+  'ISO21940-14-DIS': { cat: 'standard', note: 'バランス誤差評価の改訂。DIS投票終了（40.60）＝出版接近（2026-07-11確認）。' },
+  'API688-2nd-2023': { cat: 'standard', note: 'PD機械の脈動・振動制御規格。「ねじり規格」ではない＝呼称注意の根拠。' },
+  'Energies-Recontrol-2024': { cat: 'research', note: 'AMBロータドロップ後の再浮上（recontrol）可否の定量評価。TDB設計の次のフロンティア。' },
+  'Fortescue-Cancel-2025': { cat: 'secondary', note: '水素大型案件の着工前キャンセル波の代表例。D2後ろ倒しの傍証。' },
+  'AEA-JapanNH3-Roadmap': { cat: 'policy', note: '日本のアンモニア導入目標（300万t/2030→3,000万t/2050）。NH3燃料転換の政策アンカー。' },
+  'GFB-Review-IMechE-2024': { cat: 'research', note: 'ガスフォイル軸受コンプライアント構造の最新網羅レビュー。' },
+  'Joby-eIPP-2026': { cat: 'tech', note: '型式証明前の早期運航（eIPP・2026年内10州）の一次PR。eVTOL実装時期の最新アンカー。' },
+  'Garrett-ChinaRefrig-2026': { cat: 'tech', note: '1,250 kWc 大容量油フリー遠心圧縮機の初出一次。フォイル軸受MWc級跳躍の補完。' },
+  'Oracle-Bloom-2026': { cat: 'tech', note: 'SOFC最大2.45 GWが計画GTを置換した初の旗艦実例。D3「SOFC侵食シナリオ」を実例つきリスクへ格上げ。' },
+  'Kodiak-BH-2026': { cat: 'tech', note: 'DC向けGT 1–1.8 GW供給枠組み。GT増強とSOFC代替が同時進行する証拠。' },
+  'NESO-FRCR-2025': { cat: 'policy', note: '最低保持慣性の引き下げ提案（120→102 GVA.s）＝慣性の非同期代替リスクの一次シグナル（原文書精読は残タスク）。' },
+  'NESO-14.9bn-2025': { cat: 'policy', note: 'Phase 3 の消費者便益£14.9bn（契約額約£1.3bn）。「£14.9bn」の正体を確定した一次。' },
   // ── 二次 ──
   'TGM-AIEng-2026': { cat: 'secondary', note: 'エンジニアリングAI動向の業界解説。DTの「事例希薄」判断の傍証。' },
   'RnM-DCLiquid-2025': { cat: 'secondary', note: 'DC液冷市場の民間予測。桁が割れるため方向性のみ採用。' },
-  'GEV-Backlog-2026': { cat: 'secondary', note: 'GT受注残100GWの決算報道（一次決算の直接確認は未了のため二次扱い）。' },
+  'GEV-Backlog-2026': { cat: 'tech', note: 'ガス発電 受注残＋スロット予約 83→100 GW・年末110 GW見通し（2026-07-11 公式PR/8-Kで一次確認完了。AI/DC約20%は二次報道のまま）。' },
 }
 
 export const SOURCE_MAP: Record<string, SourceRef> = Object.fromEntries(
