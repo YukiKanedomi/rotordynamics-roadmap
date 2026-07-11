@@ -14,6 +14,8 @@ import {
   NARRATIVE,
   ANCHOR,
   SOLUTIONS,
+  RD_COLORS,
+  CHIP_LABEL,
   type Confidence,
   type Driver,
   type Horizon,
@@ -21,11 +23,13 @@ import {
 } from './data/roadmap'
 import { AGENDA, TIER_META, TOPIC_SPACE, TOPIC_SPACE_REFS, type AgendaTier } from './data/agenda'
 import { PLAYERS, PLAYER_GROUPS, MA_WATCH, REGION_FILTERS } from './data/players'
+import PhysicsView from './PhysicsView'
 
-type Tab = 'board' | 'story' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'players' | 'sources'
+type Tab = 'board' | 'story' | 'physics' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'players' | 'sources'
 const TABS: [Tab, string][] = [
   ['board', 'BOARD'],
   ['story', 'STORY'],
+  ['physics', 'PHYSICS'],
   ['linkage', 'LINKAGE'],
   ['drivers', 'DRIVERS'],
   ['rd', 'RD MAP'],
@@ -36,19 +40,6 @@ const TABS: [Tab, string][] = [
 
 const confKey = (c: Confidence) => (c === '確立' ? 'e' : c === '推定' ? 'p' : 'h')
 const confClass = (c: Confidence) => 'conf c-' + confKey(c)
-
-/* 横断RD課題の色（白地で成立する muted 色） */
-const RD_COLORS: Record<string, string> = {
-  critspeed: '#1F3A5F',
-  stability: '#7A3E48',
-  torsional: '#A97B18',
-  balancing: '#6B5B3E',
-  bearing: '#2F6B6B',
-  seal: '#3D7A50',
-  emag: '#5B2A4A',
-  monitoring: '#3E5C76',
-  digital: '#5A6472',
-}
 
 /* ───── ダッシュボード用メタ（チャンネル状態・KPI・ティッカー） ───── */
 const CHANNEL_META: Record<string, { st: string; w?: boolean; pct: number; note: string }> = {
@@ -74,18 +65,6 @@ const KPIS: {
   { k: 'GRID INERTIA PROCURED (UK)', v: <>36<small> GVA·s ／ 2026 全量運開</small></>, src: 'NESO Stability Pathfinder', srcKey: 'NESO-Stability-2025' },
   { k: 'MOTOR SPECIFIC POWER', v: <>13.2<small> kW/kg @96% ／ EIS 2035–40</small></>, src: 'NASA EAP (2023)', srcKey: 'NASA-EAP-2023' },
 ]
-
-const CHIP_LABEL: Record<string, string> = {
-  critspeed: '危険速度',
-  stability: '安定性',
-  torsional: 'ねじり',
-  balancing: 'バランス',
-  bearing: '軸受',
-  seal: 'シール',
-  emag: '電磁',
-  monitoring: '監視',
-  digital: '解析/DT',
-}
 
 const NEWS: { tag: string; w?: boolean; text: string }[] = [
   { tag: 'ALERT', w: true, text: 'IMO Net-Zero Framework 採択1年延期（2025-10）' },
@@ -219,6 +198,7 @@ export default function App() {
           />
         )}
         {tab === 'story' && <StoryView />}
+        {tab === 'physics' && <PhysicsView />}
         {tab === 'linkage' && <LinkageView isMobile={isMobile} />}
         {tab === 'drivers' && <DriversView onPick={(m, driver) => setActive({ m, driver })} />}
         {tab === 'rd' && (

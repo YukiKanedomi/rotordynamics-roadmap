@@ -1,0 +1,614 @@
+import { useMemo, useState } from 'react'
+import { SOURCE_MAP, SOLUTIONS, RD_COLORS, CHIP_LABEL, ANCHOR } from './data/roadmap'
+import {
+  BOUNDARIES,
+  MATRIX,
+  MATRIX_DRIVERS,
+  MATRIX_NOTE,
+  FLUIDS,
+  FLUID_MAP,
+  PRESETS,
+  LEDGER,
+  ARCHETYPES,
+  VECTOR_LEDGER,
+  type MachineInput,
+} from './data/physics'
+
+/* ───── 小物 ───── */
+function Cites({ refs }: { refs: string[] }) {
+  if (!refs.length) return null
+  return (
+    <span className="cites">
+      {refs.map((r) => {
+        const s = SOURCE_MAP[r]
+        return s ? (
+          <a key={r} className="cref" href={s.url} target="_blank" rel="noreferrer" title={s.title}>
+            {r}
+          </a>
+        ) : (
+          <span key={r} className="cref topic">{r}</span>
+        )
+      })}
+    </span>
+  )
+}
+
+const fmtSI = (v: number) => {
+  if (v >= 1e6) return (v / 1e6).toFixed(2) + '×10⁶'
+  if (v >= 1e3) return (v / 1e3).toFixed(0) + '×10³'
+  return v.toFixed(0)
+}
+
+/* ───── 計算 ───── */
+const R_GAS = 8.314
+function calcAll(inp: MachineInput) {
+  const dn = inp.d * inp.N
+  const U = (Math.PI * (inp.D / 1000) * inp.N) / 60
+  const sigma = (7850 * U * U) / 1e6 // MPa（鋼の薄肉リング目安）
+  const dm = inp.d / 1000
+  const Lm = inp.L / 1000
+  const omega1 = Math.pow(Math.PI / Lm, 2) * (dm / 4) * Math.sqrt(210e9 / 7850)
+  const f1 = omega1 / (2 * Math.PI)
+  const fN = inp.N / 60
+  const ratio = fN / f1
+  const mw = FLUID_MAP[inp.fluid].mw
+  const rho = (inp.p * 1e5 * (mw / 1000)) / (R_GAS * (inp.T + 273.15))
+  const prod = mw * rho
+  return { dn, U, sigma, f1, fN, ratio, mw, rho, prod }
+}
+type Calc = ReturnType<typeof calcAll>
+
+interface Verdict { level: 'ok' | 'gold' | 'warn' | 'navy'; text: string }
+function verdicts(c: Calc): Record<string, Verdict> {
+  const v: Record<string, Verdict> = {}
+  v.B1 =
+    c.dn < 5e5
+      ? { level: 'ok', text: '転がり軸受で余裕（グリース帯）' }
+      : c.dn < 1e6
+        ? { level: 'gold', text: '転がり上限に接近（潤滑方式が効く帯）' }
+        : c.dn < 3e6
+          ? { level: 'warn', text: '境界帯＝油膜／ガス／AMB への移行を検討' }
+          : { level: 'navy', text: '転がり不可＝油膜・ガス・AMB の領域' }
+  v.B2 =
+    c.U < 150
+      ? { level: 'ok', text: '積層ロータ可の代表帯（目安）' }
+      : c.U < 250
+        ? { level: 'gold', text: '金属スリーブ保持の代表帯（目安）' }
+        : c.U < 350
+          ? { level: 'warn', text: 'CFRPスリーブ級の代表帯（目安）' }
+          : { level: 'warn', text: '理論上限 U≈358 m/s（σ=1GPa）近傍・超過' }
+  v.B3 =
+    c.ratio < 0.7
+      ? { level: 'ok', text: '亜臨界の目安域（一次曲げ以下）' }
+      : c.ratio < 1.4
+        ? { level: 'gold', text: '一次曲げ近接＝通過設計・減衰計画が必須' }
+        : { level: 'navy', text: '超臨界運転域＝内部減衰が不安定化側に回る' }
+  v.B4 =
+    c.mw <= 5
+      ? { level: 'navy', text: '危険速度律速側（低MW→多段・長スパン化）' }
+      : c.prod >= 3000
+        ? { level: 'warn', text: '安定性律速側（log dec が設計制約に）' }
+        : { level: 'ok', text: '標準域（どちらの壁からも距離あり）' }
+  return v
+}
+const LV_COLOR: Record<Verdict['level'], string> = {
+  ok: 'var(--ok)',
+  gold: 'var(--gold)',
+  warn: 'var(--warn)',
+  navy: 'var(--navy)',
+}
+
+/* ───── スケールバー（ゾーン＋マーカー） ───── */
+interface Zone { from: number; to: number; label: string; color: string }
+function ScaleBar({
+  min, max, log, zones, value, ticks, fmt,
+}: {
+  min: number; max: number; log?: boolean
+  zones: Zone[]; value: number; ticks: number[]; fmt: (v: number) => string
+}) {
+  const W = 600
+  const X0 = 8
+  const XW = W - 16
+  const pos = (v: number) => {
+    const t = log
+      ? (Math.log10(v) - Math.log10(min)) / (Math.log10(max) - Math.log10(min))
+      : (v - min) / (max - min)
+    return X0 + Math.min(1, Math.max(0, t)) * XW
+  }
+  const vx = pos(value)
+  return (
+    <svg className="px-scale" viewBox={`0 0 ${W} 64`} preserveAspectRatio="none">
+      {zones.map((z, i) => (
+        <g key={i}>
+          <rect x={pos(z.from)} y={24} width={pos(z.to) - pos(z.from)} height={12} fill={z.color} opacity={0.13} />
+          <rect x={pos(z.from)} y={24} width={pos(z.to) - pos(z.from)} height={1.5} fill={z.color} opacity={0.55} />
+          <text x={(pos(z.from) + pos(z.to)) / 2} y={48} textAnchor="middle" className="px-zlabel">
+            {z.label}
+          </text>
+        </g>
+      ))}
+      {ticks.map((t) => (
+        <g key={t}>
+          <line x1={pos(t)} x2={pos(t)} y1={36} y2={40} stroke="var(--dim2)" strokeWidth={1} />
+          <text x={pos(t)} y={60} textAnchor="middle" className="px-tick">{fmt(t)}</text>
+        </g>
+      ))}
+      <line x1={vx} x2={vx} y1={10} y2={38} stroke="var(--ink)" strokeWidth={1.6} />
+      <path d={`M ${vx - 4.5} 10 L ${vx + 4.5} 10 L ${vx} 17 Z`} fill="var(--ink)" />
+    </svg>
+  )
+}
+
+/* ───── Wachel マップ（MW × ρd, log-log） ───── */
+function WachelMap({ calc, inp }: { calc: Calc; inp: MachineInput }) {
+  const W = 620, H = 400
+  const M = { l: 52, r: 16, t: 18, b: 42 }
+  const lx = (mw: number) => M.l + ((Math.log10(mw) - 0) / (Math.log10(200) - 0)) * (W - M.l - M.r)
+  const ly = (rho: number) =>
+    H - M.b - ((Math.log10(rho) - Math.log10(0.05)) / (Math.log10(1000) - Math.log10(0.05))) * (H - M.t - M.b)
+  const presetPts = PRESETS.map((p) => {
+    const c = calcAll(p.inp)
+    return { name: p.name, mw: c.mw, rho: c.rho }
+  })
+  // 安定性律速帯: MW·ρd ≥ 3000 の上側領域
+  const isoPath = (k: number) => {
+    const mwA = Math.max(1, k / 1000)
+    const mwB = Math.min(200, k / 0.05)
+    return `M ${lx(mwA)} ${ly(k / mwA)} L ${lx(mwB)} ${ly(k / mwB)}`
+  }
+  const stabZone = () => {
+    const k = 3000
+    const mwA = Math.max(1, k / 1000)
+    const pts: string[] = []
+    pts.push(`${lx(mwA)},${ly(Math.min(1000, k / mwA))}`)
+    pts.push(`${lx(200)},${ly(k / 200)}`)
+    pts.push(`${lx(200)},${ly(1000)}`)
+    pts.push(`${lx(mwA)},${ly(1000)}`)
+    return pts.join(' ')
+  }
+  const decadesY = [0.1, 1, 10, 100, 1000]
+  const ticksX = [1, 2, 5, 10, 20, 50, 100, 200]
+  return (
+    <svg className="px-map" viewBox={`0 0 ${W} ${H}`}>
+      {/* grid */}
+      {decadesY.map((d) => (
+        <g key={'y' + d}>
+          <line x1={M.l} x2={W - M.r} y1={ly(d)} y2={ly(d)} stroke="var(--gline)" strokeWidth={1} />
+          <text x={M.l - 6} y={ly(d) + 3} textAnchor="end" className="px-tick">{d}</text>
+        </g>
+      ))}
+      {ticksX.map((t) => (
+        <g key={'x' + t}>
+          <line x1={lx(t)} x2={lx(t)} y1={M.t} y2={H - M.b} stroke="var(--gline)" strokeWidth={1} />
+          <text x={lx(t)} y={H - M.b + 16} textAnchor="middle" className="px-tick">{t}</text>
+        </g>
+      ))}
+      {/* 危険速度律速帯: MW≤5 */}
+      <rect x={lx(1)} y={M.t} width={lx(5) - lx(1)} height={H - M.t - M.b} fill="var(--navy)" opacity={0.07} />
+      <text x={lx(2.2)} y={M.t + 16} className="px-zone-l" fill="var(--navy)">危険速度律速帯</text>
+      <text x={lx(2.2)} y={M.t + 28} className="px-zone-s" fill="var(--navy)">低MW → 多段・長スパン化</text>
+      {/* 安定性律速帯: MW·ρd ≥ 3000 */}
+      <polygon points={stabZone()} fill="var(--warn)" opacity={0.07} />
+      <text x={lx(60)} y={ly(500)} className="px-zone-l" fill="var(--warn)">安定性律速帯</text>
+      <text x={lx(60)} y={ly(500) + 12} className="px-zone-s" fill="var(--warn)">MW·ρd 大 → log dec 制約</text>
+      {/* iso lines */}
+      {[300, 3000, 30000].map((k) => (
+        <g key={k}>
+          <path d={isoPath(k)} stroke="var(--dim2)" strokeWidth={1} strokeDasharray="4 4" fill="none" />
+        </g>
+      ))}
+      <text x={lx(150)} y={ly(30000 / 150) - 5} className="px-iso">MW·ρd=3×10⁴</text>
+      <text x={lx(150)} y={ly(3000 / 150) - 5} className="px-iso">3×10³</text>
+      <text x={lx(150)} y={ly(300 / 150) - 5} className="px-iso">3×10²</text>
+      {/* presets */}
+      {presetPts.map((p) => {
+        const right = p.mw > 60
+        return (
+          <g key={p.name}>
+            <circle cx={lx(p.mw)} cy={ly(Math.max(0.05, p.rho))} r={3} fill="var(--bg)" stroke="var(--dim)" strokeWidth={1.2} />
+            <text
+              x={lx(p.mw) + (right ? -6 : 6)} y={ly(Math.max(0.05, p.rho)) + 3}
+              textAnchor={right ? 'end' : 'start'} className="px-pt"
+            >
+              {p.name}
+            </text>
+          </g>
+        )
+      })}
+      {/* user point */}
+      <circle cx={lx(calc.mw)} cy={ly(Math.max(0.05, calc.rho))} r={7} fill="none" stroke="var(--ink)" strokeWidth={1.4} />
+      <circle cx={lx(calc.mw)} cy={ly(Math.max(0.05, calc.rho))} r={3} fill="var(--ink)" />
+      <text x={lx(calc.mw)} y={ly(Math.max(0.05, calc.rho)) - 12} textAnchor="middle" className="px-you">
+        YOUR MACHINE
+      </text>
+      {/* axes labels */}
+      <text x={(M.l + W - M.r) / 2} y={H - 6} textAnchor="middle" className="px-axis">分子量 MW [g/mol]（log）</text>
+      <text x={14} y={(M.t + H - M.b) / 2} className="px-axis" transform={`rotate(-90 14 ${(M.t + H - M.b) / 2})`} textAnchor="middle">
+        吐出密度 ρd [kg/m³]（理想気体推定・log）
+      </text>
+      {inp.fluid === 'co2' && inp.p > 73 && inp.T < 150 && (
+        <text x={W - M.r} y={M.t + 12} textAnchor="end" className="px-warnnote">
+          ※臨界点近傍: 実在気体効果で密度は理想気体推定の数倍になり得る
+        </text>
+      )}
+    </svg>
+  )
+}
+
+/* ───── 入力コントロール ───── */
+function Num({
+  label, unit, value, min, max, step, log, onChange,
+}: {
+  label: string; unit: string; value: number; min: number; max: number; step: number; log?: boolean
+  onChange: (v: number) => void
+}) {
+  // log スライダ: 位置を対数で扱う
+  const sMin = log ? Math.log10(min) : min
+  const sMax = log ? Math.log10(max) : max
+  const sVal = log ? Math.log10(value) : value
+  return (
+    <label className="px-num">
+      <span className="px-num-l">{label} <small>{unit}</small></span>
+      <input
+        type="range" min={sMin} max={sMax} step={log ? 0.01 : step} value={sVal}
+        onChange={(e) => {
+          const raw = Number(e.target.value)
+          onChange(log ? Math.round(Math.pow(10, raw) / step) * step : raw)
+        }}
+      />
+      <input
+        type="number" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Number(e.target.value) || min)}
+      />
+    </label>
+  )
+}
+
+/* ═══════════════ BOUNDARIES（境界地図・計算機） ═══════════════ */
+function BoundariesView() {
+  const [inp, setInp] = useState<MachineInput>({ ...PRESETS[0].inp })
+  const [preset, setPreset] = useState<string | null>(PRESETS[0].key)
+  const set = (patch: Partial<MachineInput>) => {
+    setInp((p) => ({ ...p, ...patch }))
+    setPreset(null)
+  }
+  const calc = useMemo(() => calcAll(inp), [inp])
+  const v = useMemo(() => verdicts(calc), [calc])
+  const infoBs = BOUNDARIES.filter((b) => !b.calc)
+
+  return (
+    <div>
+      <p className="lede">
+        L2→L3 の翻訳（機械の変化がどこでロータダイナミクス課題を強制するか）を、方向でなく<b>閾値</b>で持つ——
+        それがこの地図の主張です。諸元を入れると、あなたの機械が B1〜B4 のどの壁にいるかを即時判定します。
+        企業名や政策が変わっても、この境界の物理は変わりません。
+        <span className="px-caveat">数値はすべて一次目安（均一軸・理想気体・代表帯）。確度の留保は各カードに明記。</span>
+      </p>
+
+      {/* 入力 */}
+      <div className="panel px-inputs">
+        <h3><b>INPUT</b> <small>機械の諸元 — プリセットから始めて動かす</small></h3>
+        <div className="px-presets">
+          {PRESETS.map((p) => (
+            <button
+              key={p.key}
+              className={'chip' + (preset === p.key ? ' on' : '')}
+              title={p.note}
+              onClick={() => { setInp({ ...p.inp }); setPreset(p.key) }}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+        <div className="px-grid">
+          <Num label="ジャーナル径 d" unit="mm" value={inp.d} min={10} max={500} step={1} log onChange={(d) => set({ d })} />
+          <Num label="回転数 N" unit="rpm" value={inp.N} min={1000} max={200000} step={500} log onChange={(N) => set({ N })} />
+          <Num label="軸受スパン L" unit="mm" value={inp.L} min={50} max={8000} step={10} log onChange={(L) => set({ L })} />
+          <Num label="ロータ最大外径 D" unit="mm" value={inp.D} min={20} max={1500} step={5} log onChange={(D) => set({ D })} />
+          <label className="px-num px-sel">
+            <span className="px-num-l">作動流体</span>
+            <select value={inp.fluid} onChange={(e) => set({ fluid: e.target.value })}>
+              {FLUIDS.map((f) => (
+                <option key={f.key} value={f.key}>{f.name}（MW {f.mw}）</option>
+              ))}
+            </select>
+          </label>
+          <Num label="吐出圧力 p" unit="bar" value={inp.p} min={1} max={400} step={1} log onChange={(p) => set({ p })} />
+          <Num label="吐出温度 T" unit="°C" value={inp.T} min={0} max={700} step={5} onChange={(T) => set({ T })} />
+          <label className="px-num px-chk">
+            <span className="px-num-l">モータ一体</span>
+            <button className={'chip' + (inp.motor ? ' on' : '')} onClick={() => set({ motor: !inp.motor })}>
+              {inp.motor ? 'YES — B5 が効く' : 'NO'}
+            </button>
+          </label>
+        </div>
+      </div>
+
+      {/* 判定サマリ */}
+      <div className="px-verdicts">
+        {(['B1', 'B2', 'B3', 'B4'] as const).map((id) => {
+          const b = BOUNDARIES.find((x) => x.id === id)!
+          const val =
+            id === 'B1' ? fmtSI(calc.dn) + ' mm·rpm'
+            : id === 'B2' ? calc.U.toFixed(0) + ' m/s'
+            : id === 'B3' ? 'N/f₁ = ' + calc.ratio.toFixed(2)
+            : 'MW·ρd = ' + fmtSI(calc.prod)
+          return (
+            <div className="px-verdict" key={id} style={{ borderTopColor: LV_COLOR[v[id].level] }}>
+              <div className="px-vid">{id} <span>{b.en}</span></div>
+              <div className="px-vval">{val}</div>
+              <div className="px-vtext" style={{ color: LV_COLOR[v[id].level] }}>{v[id].text}</div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* B1–B3 スケール */}
+      <div className="px-cards">
+        <div className="panel px-card">
+          <h3><b>B1</b> <small>DN値境界 — 転がり軸受の壁</small></h3>
+          <div className="px-law">DN = d × N = <b>{fmtSI(calc.dn)}</b> mm·rpm</div>
+          <ScaleBar
+            min={1e5} max={1e7} log value={calc.dn}
+            ticks={[1e5, 1e6, 1e7]} fmt={(t) => (t === 1e5 ? '10⁵' : t === 1e6 ? '10⁶' : '10⁷')}
+            zones={[
+              { from: 1e5, to: 5e5, label: 'グリース余裕', color: 'var(--ok)' },
+              { from: 5e5, to: 1e6, label: '上限接近', color: 'var(--gold)' },
+              { from: 1e6, to: 3e6, label: '境界帯（1–3×10⁶）', color: 'var(--warn)' },
+              { from: 3e6, to: 1e7, label: '油膜／ガス／AMB', color: 'var(--navy)' },
+            ]}
+          />
+          <p className="px-note">{BOUNDARIES[0].detail}</p>
+          <p className="px-cav">{BOUNDARIES[0].caution}</p>
+        </div>
+
+        <div className="panel px-card">
+          <h3><b>B2</b> <small>周速壁 — σ_θ ≈ ρU²</small></h3>
+          <div className="px-law">
+            U = πDN/60 = <b>{calc.U.toFixed(0)}</b> m/s　→　σ_θ ≈ <b>{calc.sigma.toFixed(0)}</b> MPa <small>(鋼 ρ=7,850)</small>
+          </div>
+          <ScaleBar
+            min={0} max={450} value={calc.U}
+            ticks={[0, 150, 250, 350, 450]} fmt={(t) => String(t)}
+            zones={[
+              { from: 0, to: 150, label: '積層ロータ帯', color: 'var(--ok)' },
+              { from: 150, to: 250, label: '金属スリーブ帯', color: 'var(--gold)' },
+              { from: 250, to: 350, label: 'CFRPスリーブ帯', color: 'var(--warn)' },
+              { from: 350, to: 450, label: '理論上限 U≈358 (σ=1GPa)', color: 'var(--navy)' },
+            ]}
+          />
+          <p className="px-note">{BOUNDARIES[1].detail}</p>
+          <p className="px-cav">{BOUNDARIES[1].caution}</p>
+        </div>
+
+        <div className="panel px-card">
+          <h3><b>B3</b> <small>超臨界化 — 一次曲げとの比</small></h3>
+          <div className="px-law">
+            f₁ ≈ <b>{calc.f1 < 100 ? calc.f1.toFixed(1) : calc.f1.toFixed(0)}</b> Hz <small>(均一鋼軸・単純支持)</small>
+            　／　N = <b>{calc.fN.toFixed(0)}</b> Hz　→　N/f₁ = <b>{calc.ratio.toFixed(2)}</b>
+          </div>
+          <ScaleBar
+            min={0.1} max={10} log value={Math.min(10, Math.max(0.1, calc.ratio))}
+            ticks={[0.1, 0.7, 1, 1.4, 10]} fmt={(t) => String(t)}
+            zones={[
+              { from: 0.1, to: 0.7, label: '亜臨界', color: 'var(--ok)' },
+              { from: 0.7, to: 1.4, label: '一次曲げ近接', color: 'var(--gold)' },
+              { from: 1.4, to: 10, label: '超臨界運転域', color: 'var(--navy)' },
+            ]}
+          />
+          <p className="px-note">{BOUNDARIES[2].detail}</p>
+          <p className="px-cav">{BOUNDARIES[2].caution}</p>
+        </div>
+      </div>
+
+      {/* B4 マップ */}
+      <div className="panel px-card">
+        <h3><b>B4</b> <small>Wachel境界 — 作動流体がどちらの壁に送るか</small></h3>
+        <WachelMap calc={calc} inp={inp} />
+        <p className="px-note">
+          {BOUNDARIES[3].detail}　現在値: MW={calc.mw}・ρd≈{calc.rho < 10 ? calc.rho.toFixed(1) : calc.rho.toFixed(0)} kg/m³（理想気体推定）。
+        </p>
+        <p className="px-cav">{BOUNDARIES[3].caution}　<Cites refs={BOUNDARIES[3].sources} /></p>
+      </div>
+
+      {/* B5–B7 情報カード */}
+      <div className="px-cards3">
+        {infoBs.map((b) => (
+          <div className="panel px-card" key={b.id}>
+            <h3><b>{b.id}</b> <small>{b.name}</small></h3>
+            <div className="px-law">{b.law}</div>
+            <p className="px-note">
+              {b.detail}
+              {b.id === 'B5' && inp.motor && (
+                <span className="px-active-note">　← モータ一体=YES: この機械で効いている境界。</span>
+              )}
+            </p>
+            {b.caution && <p className="px-cav">{b.caution}</p>}
+            <Cites refs={b.sources} />
+          </div>
+        ))}
+      </div>
+
+      {/* 境界×ドライバ行列 */}
+      <div className="panel px-card">
+        <h3><b>MATRIX</b> <small>どのドライバがどの境界をどの向きに押すか（—/↑/↑↑）</small></h3>
+        <table className="px-matrix">
+          <thead>
+            <tr>
+              <th />
+              {MATRIX_DRIVERS.map((d) => <th key={d}>{d}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {BOUNDARIES.map((b) => (
+              <tr key={b.id}>
+                <th title={b.name}>{b.id} <small>{b.name.split('（')[0]}</small></th>
+                {MATRIX_DRIVERS.map((d) => {
+                  const m = MATRIX[b.id][d]
+                  const note = MATRIX_NOTE[`${b.id}-${d}`]
+                  return (
+                    <td key={d} className={'px-m' + m} title={note || ''}>
+                      {m === 0 ? '—' : m === 1 ? '↑' : '↑↑'}
+                      {note && <i>{note}</i>}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="px-cav">D5（横断能力=push側）は境界を「押す」側でなく「壁への答え」側のため列に含めない。</p>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════ LEDGER（減衰の台帳） ═══════════════ */
+function LedgerView() {
+  const [arch, setArch] = useState<string | null>(null)
+  const a = ARCHETYPES.find((x) => x.key === arch) || null
+  const consume = LEDGER.filter((l) => l.side === 'consume')
+  const supply = LEDGER.filter((l) => l.side === 'supply')
+  const state = (key: string): 'on' | 'lost' | 'dim' | 'base' => {
+    if (!a) return 'base'
+    if (a.lost.includes(key)) return 'lost'
+    if (a.consume.includes(key) || a.supply.includes(key)) return 'on'
+    return 'dim'
+  }
+  const sols = a
+    ? Array.from(new Set(supply.filter((s) => a.supply.includes(s.key)).flatMap((s) => s.sol || [])))
+    : []
+
+  const Item = ({ it }: { it: (typeof LEDGER)[number] }) => {
+    const st = state(it.key)
+    return (
+      <div className={'px-li px-li-' + st + (it.side === 'consume' ? ' px-li-c' : ' px-li-s')}>
+        <div className="px-li-h">
+          <strong>{it.name}</strong>
+          {it.vec && <span className="px-vtag">{it.vec}</span>}
+          {st === 'on' && <span className="px-ontag">{it.side === 'consume' ? '効いている' : '調達中'}</span>}
+          {st === 'lost' && <span className="px-losttag">失った</span>}
+        </div>
+        <p>{it.mech}</p>
+        <div className="px-li-f">
+          {it.rd.map((r) => (
+            <span className="px-rd" key={r} style={{ color: RD_COLORS[r] }}>
+              ● {CHIP_LABEL[r]}
+            </span>
+          ))}
+          {it.lostBy && <span className="px-lostby">{it.lostBy}</span>}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <p className="lede">
+        中心命題: 回転機械の進化は「エネルギー密度の上昇 × 受動減衰の喪失 × 連成の増加」であり、
+        機種を問わず<b>「減衰をどこから調達するか」という単一の収支問題</b>に収束する——
+        業界全体が、収入源（油膜）を手放しながら支出（クロスカップリング・UMP・系統事象）を増やしている。
+        機種を選ぶと、台帳のどこが動くかが見える。
+        <span className="px-caveat">留保: 減衰は座標系・モード依存で単一スカラーの収支ではない。log dec はモードごとに立てる。</span>
+      </p>
+
+      <div className="px-presets">
+        <button className={'chip' + (arch === null ? ' on' : '')} onClick={() => setArch(null)}>全体</button>
+        {ARCHETYPES.map((x) => (
+          <button key={x.key} className={'chip' + (arch === x.key ? ' on' : '')} onClick={() => setArch(arch === x.key ? null : x.key)}>
+            {x.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-ledger">
+        <div className="panel px-side px-side-c">
+          <h3><b>消費</b> <small>不安定化・減衰需要の増加</small></h3>
+          {consume.map((it) => <Item key={it.key} it={it} />)}
+        </div>
+        <div className="panel px-side px-side-s">
+          <h3><b>供給</b> <small>安定化・減衰の調達源</small></h3>
+          {supply.map((it) => <Item key={it.key} it={it} />)}
+        </div>
+      </div>
+
+      {a && (
+        <div className="panel px-read">
+          <h3><b>READ</b> <small>{a.name} — 収支の読み</small></h3>
+          <div className="px-balance">
+            <div className="px-bal-row">
+              <span className="px-bal-l" style={{ color: 'var(--warn)' }}>消費 {a.consume.length}</span>
+              <div className="px-bal-bar">
+                <i style={{ width: `${a.consume.length * 20}%`, background: 'var(--warn)' }} />
+              </div>
+            </div>
+            <div className="px-bal-row">
+              <span className="px-bal-l" style={{ color: 'var(--navy)' }}>供給 {a.supply.length}{a.lost.length > 0 && <small>（喪失 {a.lost.length}）</small>}</span>
+              <div className="px-bal-bar">
+                <i style={{ width: `${a.supply.length * 20}%`, background: 'var(--navy)' }} />
+              </div>
+            </div>
+          </div>
+          <p className="px-read-t">{a.read}</p>
+          <div className="px-read-f">
+            <span className="px-read-k">ドライバ:</span>
+            {a.drivers.map((d) => <span className="pill" key={d}>{d}</span>)}
+            {sols.length > 0 && (
+              <>
+                <span className="px-read-k">解の方向:</span>
+                {sols.map((s) => {
+                  const sol = SOLUTIONS.find((x) => x.id === s)
+                  return <span className="pill" key={s} title={sol?.detail}>{s} {sol?.name}</span>
+                })}
+              </>
+            )}
+            {a.sources && <Cites refs={a.sources} />}
+          </div>
+        </div>
+      )}
+
+      <div className="panel px-card">
+        <h3><b>VECTORS × LEDGER</b> <small>共通ベクトル5本は台帳の別表現</small></h3>
+        <div className="px-vrows">
+          {VECTOR_LEDGER.map((vl) => (
+            <div className="px-vrow" key={vl.id}>
+              <span className="px-vid2">{vl.id}</span>
+              <span className="px-vname">{vl.name}</span>
+              <span className={'px-vside px-vside-' + vl.side}>
+                {vl.side === 'consume' ? '消費側 →' : vl.side === 'supply' ? '供給側 →' : '両側 →'}
+              </span>
+              <span className="px-vrole">{vl.role}</span>
+            </div>
+          ))}
+        </div>
+        <blockquote className="anchor px-anchor">
+          <p>“{ANCHOR.quote}”</p>
+          <footer>— {ANCHOR.attribution}　<Cites refs={[ANCHOR.ref]} /></footer>
+        </blockquote>
+        <p className="px-cav">
+          L4 の解（S1 先進軸受／S2 ダンパシール／S3 能動制御・SFD／S4 UQ・DT／S5 規格）はすべて
+          「減衰の代替調達」として読める。[設計判断]（正本 §1）
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════ PHYSICS タブ本体 ═══════════════ */
+export default function PhysicsView() {
+  const [sub, setSub] = useState<'bnd' | 'ledger'>('bnd')
+  return (
+    <div className="px">
+      <div className="px-subnav">
+        <button className={'chip' + (sub === 'bnd' ? ' on' : '')} onClick={() => setSub('bnd')}>
+          BOUNDARIES 境界地図 — あなたの機械はどの壁にいるか
+        </button>
+        <button className={'chip' + (sub === 'ledger' ? ' on' : '')} onClick={() => setSub('ledger')}>
+          LEDGER 減衰の台帳 — 収支で読む
+        </button>
+        <span className="px-subnote">構造層（無日付の物理）— ニュースでは書き換えない</span>
+      </div>
+      {sub === 'bnd' ? <BoundariesView /> : <LedgerView />}
+    </div>
+  )
+}

@@ -244,6 +244,30 @@ export const SOLUTIONS: Solution[] = [
   { id: 'S5', name: '規格整備（API/ISO）', detail: 'API 617/684・ISO 20816/21940/14839 の追従改訂と、油フリー/ガス軸受機を正面から扱う新規格の整備。', rd: ['bearing', 'stability', 'torsional', 'balancing', 'monitoring'], sources: ['ISO20816-1-2016', 'ISO14839-5-2022', 'API-TR684-1-2019'] },
 ]
 
+/* 横断RD課題の色・短縮ラベル（App/PhysicsView 共用。白地で成立する muted 色） */
+export const RD_COLORS: Record<string, string> = {
+  critspeed: '#1F3A5F',
+  stability: '#7A3E48',
+  torsional: '#A97B18',
+  balancing: '#6B5B3E',
+  bearing: '#2F6B6B',
+  seal: '#3D7A50',
+  emag: '#5B2A4A',
+  monitoring: '#3E5C76',
+  digital: '#5A6472',
+}
+export const CHIP_LABEL: Record<string, string> = {
+  critspeed: '危険速度',
+  stability: '安定性',
+  torsional: 'ねじり',
+  balancing: 'バランス',
+  bearing: '軸受',
+  seal: 'シール',
+  emag: '電磁',
+  monitoring: '監視',
+  digital: '解析/DT',
+}
+
 // ───────────────────────── 横断RD課題クラスタ ─────────────────────────
 // 分類の骨格は業界標準（API TR 684-1 の柱: 横危険速度・不釣合い応答／安定性／ねじり／バランシング、
 // ISO 20816/21940/14839 系、および分野の標準教科書）に置く。特定プロジェクトの知見体系には依らない。
