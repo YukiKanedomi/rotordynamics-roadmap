@@ -583,3 +583,22 @@ a { color: var(--navy); }
   .px-subnote { display: none; }
   .px-matrix tbody th small { display: none; }
 }
+/* ---- cases ---- */
+.px-casestrip { height: 128px; }
+.px-cases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 14px; }
+.px-case { padding-bottom: 12px; display: flex; flex-direction: column; }
+.px-case-h { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin-bottom: 4px; }
+.px-case-y { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: .06em; }
+.px-case-st { font-family: var(--mono); font-size: 9px; border: 1px solid currentColor; padding: 1px 6px; letter-spacing: .1em; }
+.px-case-b { font-family: var(--mono); font-size: 9px; color: var(--navy); border: 1px solid var(--line); padding: 1px 5px; }
+.px-case-t { font-size: 14px; margin: 2px 0 4px; line-height: 1.5; }
+.px-case-side { font-size: 11.5px; color: var(--navy); font-weight: 600; line-height: 1.6; margin: 0 0 6px; }
+.px-case-nums { display: flex; flex-direction: column; gap: 2px; margin: 0 0 8px; background: var(--sink); padding: 7px 10px; }
+.px-case-nums div { display: flex; gap: 8px; align-items: baseline; }
+.px-case-nums dt { font-family: var(--mono); font-size: 9px; color: var(--dim); width: 72px; flex-shrink: 0; letter-spacing: .04em; }
+.px-case-nums dd { font-family: var(--mono); font-size: 11px; color: var(--ink); margin: 0; }
+.px-case-img, .px-case-read { font-size: 11.5px; line-height: 1.8; color: var(--soft); margin: 0 0 6px; }
+.px-case-img span, .px-case-read span { display: block; font-family: var(--mono); font-size: 8.5px; letter-spacing: .1em; color: var(--dim); margin-bottom: 1px; }
+.px-case-read { margin-top: auto; }
+@media (max-width: 980px) { .px-cases { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .px-cases { grid-template-columns: 1fr; } }

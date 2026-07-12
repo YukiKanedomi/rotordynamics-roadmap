@@ -13,6 +13,7 @@ import {
   VECTOR_LEDGER,
   type MachineInput,
 } from './data/physics'
+import { CASES } from './data/cases'
 
 /* ───── 小物 ───── */
 function Cites({ refs }: { refs: string[] }) {
@@ -70,13 +71,15 @@ function verdicts(c: Calc): Record<string, Verdict> {
           ? { level: 'warn', text: '境界帯＝油膜／ガス／AMB への移行を検討' }
           : { level: 'navy', text: '転がり不可＝油膜・ガス・AMB の領域' }
   v.B2 =
-    c.U < 150
-      ? { level: 'ok', text: '積層ロータ可の代表帯（目安）' }
-      : c.U < 250
-        ? { level: 'gold', text: '金属スリーブ保持の代表帯（目安）' }
-        : c.U < 350
-          ? { level: 'warn', text: 'CFRPスリーブ級の代表帯（目安）' }
-          : { level: 'warn', text: '理論上限 U≈358 m/s（σ=1GPa）近傍・超過' }
+    c.U < 250
+      ? { level: 'ok', text: '電機ロータの実績帯（最高報告 245 m/s）' }
+      : c.U < 300
+        ? { level: 'gold', text: 'スリーブ保持PMの現状上限帯' }
+        : c.U < 400
+          ? { level: 'warn', text: '最高峰報告帯（solid系400）／Tiインペラ実証域' }
+          : c.U < 550
+            ? { level: 'warn', text: 'Ti遠心インペラ帯（550級＝Ti必須）' }
+            : { level: 'navy', text: '公表実績超＝材料限界域' }
   v.B3 =
     c.ratio < 0.7
       ? { level: 'ok', text: '亜臨界の目安域（一次曲げ以下）' }
@@ -359,7 +362,7 @@ function BoundariesView() {
             ]}
           />
           <p className="px-note">{BOUNDARIES[0].detail}</p>
-          <p className="px-cav">{BOUNDARIES[0].caution}</p>
+          <p className="px-cav">{BOUNDARIES[0].caution}　<Cites refs={BOUNDARIES[0].sources} /></p>
         </div>
 
         <div className="panel px-card">
@@ -368,17 +371,18 @@ function BoundariesView() {
             U = πDN/60 = <b>{calc.U.toFixed(0)}</b> m/s　→　σ_θ ≈ <b>{calc.sigma.toFixed(0)}</b> MPa <small>(鋼 ρ=7,850)</small>
           </div>
           <ScaleBar
-            min={0} max={450} value={calc.U}
-            ticks={[0, 150, 250, 350, 450]} fmt={(t) => String(t)}
+            min={0} max={600} value={calc.U}
+            ticks={[0, 250, 300, 400, 550]} fmt={(t) => String(t)}
             zones={[
-              { from: 0, to: 150, label: '積層ロータ帯', color: 'var(--ok)' },
-              { from: 150, to: 250, label: '金属スリーブ帯', color: 'var(--gold)' },
-              { from: 250, to: 350, label: 'CFRPスリーブ帯', color: 'var(--warn)' },
-              { from: 350, to: 450, label: '理論上限 U≈358 (σ=1GPa)', color: 'var(--navy)' },
+              { from: 0, to: 250, label: '電機ロータ実績帯（≤245実測）', color: 'var(--ok)' },
+              { from: 250, to: 300, label: 'スリーブPM上限', color: 'var(--gold)' },
+              { from: 300, to: 400, label: '最高峰報告帯', color: 'var(--warn)' },
+              { from: 400, to: 550, label: 'Tiインペラ帯（550=Ti必須）', color: 'var(--warn)' },
+              { from: 550, to: 600, label: '実績超', color: 'var(--navy)' },
             ]}
           />
           <p className="px-note">{BOUNDARIES[1].detail}</p>
-          <p className="px-cav">{BOUNDARIES[1].caution}</p>
+          <p className="px-cav">{BOUNDARIES[1].caution}　<Cites refs={BOUNDARIES[1].sources} /></p>
         </div>
 
         <div className="panel px-card">
@@ -594,9 +598,123 @@ function LedgerView() {
   )
 }
 
+/* ═══════════════ CASES（実機事例 × 境界地図） ═══════════════ */
+function CaseStrip() {
+  // B3 スケール（N/f₁, log 0.1–10）の上に、比が判明している事例を置く
+  const pts = CASES.filter((c) => c.ratio != null)
+  const W = 620, H = 128
+  const X0 = 10, XW = W - 20
+  const pos = (v: number) =>
+    X0 + ((Math.log10(v) - Math.log10(0.1)) / (Math.log10(10) - Math.log10(0.1))) * XW
+  const zones = [
+    { from: 0.1, to: 0.7, label: '亜臨界', color: 'var(--ok)' },
+    { from: 0.7, to: 1.4, label: '一次曲げ近接', color: 'var(--gold)' },
+    { from: 1.4, to: 10, label: '超臨界運転域', color: 'var(--navy)' },
+  ]
+  const BAR_Y = 66
+  return (
+    <svg className="px-scale px-casestrip" viewBox={`0 0 ${W} ${H}`}>
+      {zones.map((z, i) => (
+        <g key={i}>
+          <rect x={pos(z.from)} y={BAR_Y} width={pos(z.to) - pos(z.from)} height={12} fill={z.color} opacity={0.13} />
+          <rect x={pos(z.from)} y={BAR_Y} width={pos(z.to) - pos(z.from)} height={1.5} fill={z.color} opacity={0.55} />
+          <text x={(pos(z.from) + pos(z.to)) / 2} y={BAR_Y + 26} textAnchor="middle" className="px-zlabel">
+            {z.label}
+          </text>
+        </g>
+      ))}
+      {[0.1, 0.7, 1, 1.4, 10].map((t) => (
+        <g key={t}>
+          <line x1={pos(t)} x2={pos(t)} y1={BAR_Y + 12} y2={BAR_Y + 16} stroke="var(--dim2)" strokeWidth={1} />
+          <text x={pos(t)} y={BAR_Y + 40} textAnchor="middle" className="px-tick">{t}</text>
+        </g>
+      ))}
+      <line x1={pos(1)} x2={pos(1)} y1={12} y2={BAR_Y + 12} stroke="var(--dim2)" strokeWidth={1} strokeDasharray="3 3" />
+      <text x={pos(1)} y={10} textAnchor="middle" className="px-tick">N = f₁</text>
+      {pts.map((c, i) => {
+        const x = pos(c.ratio!)
+        const lift = 22 + (i % 2) * 16 // 近接ラベルの重なり回避
+        return (
+          <g key={c.key}>
+            <line x1={x} x2={x} y1={lift + 6} y2={BAR_Y + 6} stroke="var(--ink)" strokeWidth={1.2} />
+            <circle cx={x} cy={BAR_Y + 6} r={3.4} fill="var(--ink)" />
+            <text
+              x={x} y={lift} textAnchor={c.ratio! > 5 ? 'end' : 'middle'} className="px-pt"
+            >
+              {c.name.split('—')[0].trim()} {c.ratio!.toFixed(2)}{c.ratioNote ? `（${c.ratioNote}）` : ''}
+            </text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+const CASE_STATUS_COLOR: Record<string, string> = {
+  量産: 'var(--navy)',
+  実証: 'var(--ok)',
+  研究: 'var(--gold)',
+  計画: 'var(--dim)',
+}
+
+function CasesView() {
+  const [bnd, setBnd] = useState<string | null>(null)
+  const bnds = Array.from(new Set(CASES.flatMap((c) => c.bnds))).sort()
+  const shown = bnd ? CASES.filter((c) => c.bnds.includes(bnd)) : CASES
+  return (
+    <div>
+      <p className="lede">
+        境界地図（B1–B7）は抽象ではない——公開文献の実機・実験事例を壁の上に置くと、
+        <b>どの壁が「越えられた」実績を持ち、どの壁の前で産業が止まっているか</b>が読める。
+        代表例が B3: 実験室は四半世紀前に曲げ一次の2.5倍まで到達したが、量産機は今も一次の下に定格を置く。
+        <span className="px-caveat">全事例が公開文献ベース。数値は原典の生値（丸め表記は注記）。</span>
+      </p>
+
+      <div className="panel px-card">
+        <h3><b>B3 STRIP</b> <small>N/f₁ 比の実測地図 — 実験室と量産機の分布</small></h3>
+        <CaseStrip />
+        <p className="px-cav">
+          比が原典数値から確定できる事例のみプロット。EPFL 170 krpm は hybrid mode 超え（純粋な曲げ一次比が未確定）のためカードのみ。
+        </p>
+      </div>
+
+      <div className="px-presets">
+        <button className={'chip' + (bnd === null ? ' on' : '')} onClick={() => setBnd(null)}>全事例</button>
+        {bnds.map((b) => (
+          <button key={b} className={'chip' + (bnd === b ? ' on' : '')} onClick={() => setBnd(bnd === b ? null : b)}>
+            {b}
+          </button>
+        ))}
+      </div>
+
+      <div className="px-cases">
+        {shown.map((c) => (
+          <div className="panel px-case" key={c.key}>
+            <div className="px-case-h">
+              <span className="px-case-y">{c.year}</span>
+              <span className="px-case-st" style={{ color: CASE_STATUS_COLOR[c.status] }}>{c.status}</span>
+              {c.bnds.map((b) => <span key={b} className="px-case-b">{b}</span>)}
+            </div>
+            <h3 className="px-case-t">{c.name}</h3>
+            <p className="px-case-side">{c.side}</p>
+            <dl className="px-case-nums">
+              {c.nums.map((n) => (
+                <div key={n.label}><dt>{n.label}</dt><dd>{n.value}</dd></div>
+              ))}
+            </dl>
+            <p className="px-case-img"><span>物理イメージ</span>{c.image}</p>
+            <p className="px-case-read"><span>地図への含意</span>{c.read}</p>
+            <Cites refs={c.sources} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ═══════════════ PHYSICS タブ本体 ═══════════════ */
 export default function PhysicsView() {
-  const [sub, setSub] = useState<'bnd' | 'ledger'>('bnd')
+  const [sub, setSub] = useState<'bnd' | 'ledger' | 'cases'>('bnd')
   return (
     <div className="px">
       <div className="px-subnav">
@@ -606,9 +724,12 @@ export default function PhysicsView() {
         <button className={'chip' + (sub === 'ledger' ? ' on' : '')} onClick={() => setSub('ledger')}>
           LEDGER 減衰の台帳 — 収支で読む
         </button>
+        <button className={'chip' + (sub === 'cases' ? ' on' : '')} onClick={() => setSub('cases')}>
+          CASES 実機事例 — 壁のどちら側か
+        </button>
         <span className="px-subnote">構造層（無日付の物理）— ニュースでは書き換えない</span>
       </div>
-      {sub === 'bnd' ? <BoundariesView /> : <LedgerView />}
+      {sub === 'bnd' ? <BoundariesView /> : sub === 'ledger' ? <LedgerView /> : <CasesView />}
     </div>
   )
 }

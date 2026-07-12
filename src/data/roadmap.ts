@@ -403,6 +403,22 @@ export const SOURCES: SourceRef[] = [
   // ── 2026-07-05 RQ-01/RQ-02 ベンチマーク（代表出典） ──
   { key: 'TAMU-GFB-SideFeed-2009', title: 'Kim & San Andrés — GFBロータの渦動と側圧効果（WFR実測, ASME JEGTP 2009）', url: 'https://asmedigitalcollection.asme.org/gasturbinespower/article-abstract/131/1/012501/466131/Effect-of-Side-Feed-Pressurization-on-the-Dynamic', primary: true },
   { key: 'Calnetix-Drop-JEGTP-2007', title: 'Calnetix — AMBロータドロップ試験と解析予測（ASME JEGTP 2007）', url: 'https://asmedigitalcollection.asme.org/gasturbinespower/article-abstract/129/2/522/477793/Test-Results-and-Analytical-Predictions-for-Rotor', primary: true },
+  // ── 2026-07-12 境界地図（B1–B7）代表値の一次照合 ──
+  { key: 'NASA-TMX71877-1976', title: 'Bamberger/Zaretsky/Signer — Main-shaft jet engine bearings at 3×10⁶ DN (NASA TM X-71877, 1976)', url: 'https://ntrs.nasa.gov/search.jsp?R=19760011411', primary: true },
+  { key: 'NSK-SURSAVE-2016', title: 'NSK — 超高速アンギュラ玉軸受 3×10⁶ dmn（オイルエア潤滑, 2016）', url: 'https://www.nsk.com/company/news/2016/press1116a.html', primary: true },
+  { key: 'API617-H2-Materials', title: 'API 617 — 水素サービス材料条項（σy ≤827 MPa / HRC34。逐語は6th ed. §2.11）', url: 'https://pdfcoffee.com/api-617-2-pdf-free.html', primary: true },
+  { key: 'BH-H2ValueChain-2024', title: 'Baker Hughes — Compressors through the hydrogen value chain（250/300/400 m/s・28段例, 2024）', url: 'https://hydrogentechworld.com/compressors-and-turboexpander-solutions-through-the-hydrogen-value-chain', primary: true },
+  { key: 'ETC2023-109', title: 'ETC15 — Reduction of Mechanical Stresses in Centrifugal Compressor Impellers for Hydrogen (2023)', url: 'https://www.euroturbo.eu/publications/proceedings-papers/ETC2023-109/', primary: true },
+  { key: 'Borisavljevic-2013', title: 'Borisavljević — Limits, Modeling and Design of High-Speed PM Machines（PM周速≤250 m/s逐語, Springer Theses 2013）', url: 'https://link.springer.com/book/10.1007/978-3-642-33457-3', primary: true },
+  { key: 'Casey-ETC10-2013', title: 'Casey/Krähenbühl/Zwyssig — Ultra-High-Speed Miniature Centrifugal Compressors（550 m/s=Ti必須, ETC10 2013）', url: 'https://www.celeroton.com/wp-content/uploads/celeroton-publication-miniature-compressors.pdf', primary: true },
+  { key: 'DellaCorte-Valco-2000', title: 'DellaCorte & Valco — Load Capacity Estimation of Foil Air Journal Bearings（℘世代係数の原典, Tribol. Trans. 2000）', url: 'https://ntrs.nasa.gov/api/citations/20000121253/downloads/20000121253.pdf', primary: true },
+  // ── 2026-07-12 CASES（ガス軸受×超臨界ほか実機事例） ──
+  { key: 'Heshmat-2000-JTribol', title: 'Heshmat — Operation of Foil Bearings Beyond the Bending Critical Mode (ASME J. Tribology 122(1), 2000)', url: 'http://tribology.asmedigitalcollection.asme.org/article.aspx?articleid=1466079', primary: true },
+  { key: 'Lee-SuperCritGFB-TT-2004', title: 'Lee et al. — Unbalance Response of a Super-Critical Rotor Supported by Foil Bearings (Tribology Trans. 47(1), 2004)', url: 'https://www.tandfonline.com/doi/abs/10.1080/05698190490279038', primary: true },
+  { key: 'Lee-VEFB-TriboInt-2003', title: 'Lee et al. — Flexible rotor supported by a viscoelastic foil bearing (Tribology Int. 2003)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S0301679X03000136', primary: true },
+  { key: 'EPFL-HGJB-TC-MSSP', title: 'EPFL — Herringbone grooved gas bearing supported turbocharger, 170 krpm (MSSP・書誌細部未確定)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S0888327022008962', primary: true },
+  { key: 'TUB-GFB-PAMM-2024', title: 'TU Berlin — Modular test rig for a rotor supported by gas foil bearings (PAMM 2024)', url: 'https://onlinelibrary.wiley.com/doi/full/10.1002/pamm.202400109', primary: true },
+  { key: 'Lubricants-FCV-GFB-2025', title: 'Ying & Liu — FCV air compressor rotor on GFBs: unbalance response (Lubricants 13(4):181, 2025)', url: 'https://www.mdpi.com/2075-4442/13/4/181', primary: true },
 ]
 
 // ───────────────────────── 出典解説（注釈付き文献リスト用メタ） ─────────────────────────
@@ -504,6 +520,20 @@ export const SOURCE_META: Record<string, { cat: SourceCat; note?: string }> = {
   'TPS-deJongh-2008': { cat: 'research', note: 'Morton効果の産業チュートリアルの定番（原初事例1996の当事者による講義）。実機事例と対策メニューの一次整理。' },
   'TAMU-GFB-SideFeed-2009': { cat: 'research', note: 'フォイル軸受ロータの渦動比（WFR=0.5/0.33等）定量実測と側圧による安定化。A1（オンセット実測公表）の世界的にほぼ唯一の一次。' },
   'Calnetix-Drop-JEGTP-2007': { cat: 'research', note: 'AMBフライホイールの全速ドロップ試験（40回超）と解析予測の照合。ドロップ試験条件を査読レベルで公表した稀少例。' },
+  'NASA-TMX71877-1976': { cat: 'research', note: '航空主軸玉軸受の 3×10⁶ DN（内径基準）実証。B1 上限の航空系一次。' },
+  'NSK-SURSAVE-2016': { cat: 'tech', note: 'オイルエア潤滑アンギュラ玉で 3×10⁶ dmn（ピッチ円径基準）。B1 上限の工作機械系一次。' },
+  'API617-H2-Materials': { cat: 'standard', note: '水素サービスのインペラ材を降伏827 MPa/HRC34以下に制限（水素脆化対策）。B6「材料律速」の根拠規定。' },
+  'BH-H2ValueChain-2024': { cat: 'tech', note: '水素圧縮の周速3水準（250/300/400 m/s）と段数急増の定量例（NG 1胴3段 vs 100%H2 5胴28段）。B6 定量の柱。' },
+  'ETC2023-109': { cat: 'research', note: 'Mach相似の理想は1200 m/sだが材料限界超過＝水素は「材料律速」という構図の査読側裏付け。' },
+  'Borisavljevic-2013': { cat: 'research', note: '「PM機の周速は今日250 m/sを超えない（最高報告245）」の逐語。B2 電機側実測相場の一次。' },
+  'Casey-ETC10-2013': { cat: 'research', note: '「550 m/s級はTi必須」の逐語＋400 m/s Tiインペラ実機実証。B2 インペラ側の一次。' },
+  'DellaCorte-Valco-2000': { cat: 'research', note: 'フォイル軸受負荷容量則 W=℘(LD)(DΩ) の原典。世代係数 Gen I 0.1–0.3/Gen II 0.3–0.6/Gen III ≈1.0 を本文直読で逐語確認。' },
+  'Heshmat-2000-JTribol': { cat: 'research', note: 'GFB支持柔軟ロータで曲げ一次（34,100 rpm）を通過し約2.5倍の85,000 rpmまで運転した最有力の初実証。鍵は3軸受の節最適配置＋trim balancing。' },
+  'Lee-SuperCritGFB-TT-2004': { cat: 'research', note: '超臨界GFBロータの不釣合い応答の実験×理論比較（KIST/漢陽系）。構造減衰増強の効果を実証。' },
+  'Lee-VEFB-TriboInt-2003': { cat: 'research', note: '粘弾性フォイル軸受（VEFB）。構造減衰の強化が曲げ臨界近傍の振動を劇的に低減。' },
+  'EPFL-HGJB-TC-MSSP': { cat: 'research', note: '溝付きガス軸受ターボチャージャで170 krpm・hybrid mode超え。フォイル以外の気体膜での超臨界実証（書誌細部は確認中）。' },
+  'TUB-GFB-PAMM-2024': { cat: 'research', note: '軸受を節の外側に配置し超臨界GFBを狙う現在進行形のリグ（報告時点で曲げ未到達）。この領域が今も研究フロンティアである証左。' },
+  'Lubricants-FCV-GFB-2025': { cat: 'research', note: '商用30kW級FCV空気圧縮機（GFB）の実測。定格90,000 rpmを曲げ一次124,980 rpmの下に置く亜臨界設計＝産業の標準解の生きた実例。亜臨界でも曲げODSが応答を非線形化する知見も。' },
   // ── 規格・ガイドライン ──
   'API-TR684-1-2019': { cat: 'standard', note: 'ロータダイナミクスの実務チュートリアル正典。本ロードマップのL3分類（危険速度・応答／安定性／ねじり／バランシング）の骨格はここに接地。' },
   'ISO20816-1-2016': { cat: 'standard', note: '機械振動評価の統合規格（旧10816+7919）。「振動評価・状態監視」クラスタの背骨。' },
