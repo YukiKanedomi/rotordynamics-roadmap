@@ -11,6 +11,7 @@ import {
   LEDGER,
   ARCHETYPES,
   VECTOR_LEDGER,
+  RX_RULES,
   type MachineInput,
 } from './data/physics'
 import { CASES } from './data/cases'
@@ -90,7 +91,7 @@ function verdicts(c: Calc): Record<string, Verdict> {
     c.mw <= 5
       ? { level: 'navy', text: '危険速度律速側（低MW→多段・長スパン化）' }
       : c.prod >= 3000
-        ? { level: 'warn', text: '安定性律速側（log dec が設計制約に）' }
+        ? { level: 'warn', text: '安定性律速側の候補（MW·ρd のみの一次スクリーニング——動力・密度比は未考慮）' }
         : { level: 'ok', text: '標準域（どちらの壁からも距離あり）' }
   return v
 }
@@ -267,8 +268,99 @@ function Num({
   )
 }
 
+/* ═══════════════ RX PRESCRIPTION（判定→処方） ═══════════════ */
+function RxPanel({
+  v, calc, inp, onCase, onArch, onNav,
+}: {
+  v: Record<string, Verdict>; calc: Calc; inp: MachineInput
+  onCase: (bnd: string) => void; onArch: (key: string) => void; onNav?: (tab: string) => void
+}) {
+  const fires = (id: string): boolean => {
+    switch (id) {
+      case 'B1': return v.B1.level === 'warn' || v.B1.level === 'navy'
+      case 'B2': return v.B2.level !== 'ok'
+      case 'B3': return v.B3.level === 'gold' || v.B3.level === 'navy'
+      case 'B4R': return v.B4.level === 'warn'
+      case 'B4L': return v.B4.level === 'navy'
+      case 'B5': return inp.motor
+      case 'B8': return inp.N >= 40000
+      default: return false
+    }
+  }
+  const levelOf = (id: string): Verdict['level'] =>
+    id === 'B5' ? 'navy' : id === 'B8' ? 'gold' : v[id.slice(0, 2)]?.level ?? 'gold'
+  const fired = RX_RULES.filter((r) => fires(r.id))
+  // 全緑時: 最も近い壁
+  const prox: [string, number][] = [
+    ['B1', calc.dn / 1e6],
+    ['B2', calc.U / 250],
+    ['B3', calc.ratio / 0.7],
+    ['B4', calc.prod / 3000],
+  ]
+  const nearest = prox.sort((a, b) => b[1] - a[1])[0]
+  const caseName = (k: string) => {
+    const c = CASES.find((x) => x.key === k)
+    return c ? c.name.split('—')[0].trim() : k
+  }
+  return (
+    <div className="panel px-rx">
+      <h3><b>RX</b> <small>処方箋 — 点灯した壁に、何が効き・誰がやり・何が未解決か（一次目安・設計助言ではない）</small></h3>
+      {fired.length === 0 ? (
+        <p className="px-note">
+          全境界とも標準域です。最も近い壁は <b>{nearest[0]}</b>（閾値比 {(nearest[1] * 100).toFixed(0)}%）。
+        </p>
+      ) : (
+        fired.map((r) => {
+          const cases = r.cases.filter((k) => CASES.some((c) => c.key === k))
+          return (
+            <div className="px-rx-row" key={r.id} style={{ borderLeftColor: LV_COLOR[levelOf(r.id)] }}>
+              <div className="px-rx-h">
+                <span className="px-rx-b">{r.bnd}</span>
+                <strong>{r.headline}</strong>
+              </div>
+              <div className="px-rx-acts">
+                {r.actions.map((a, i) => (
+                  <span key={i} className="px-rx-act">
+                    {a.sol.map((s) => {
+                      const sol = SOLUTIONS.find((x) => x.id === s)
+                      return <span className="pill" key={s} title={sol?.detail}>{s} {sol?.name}</span>
+                    })}
+                    {a.text}
+                  </span>
+                ))}
+              </div>
+              <div className="px-rx-links">
+                {cases.map((k) => (
+                  <button key={k} className="chip px-rx-chip" onClick={() => onCase(r.bnd)} title="CASES タブで見る">
+                    CASE: {caseName(k)}
+                  </button>
+                ))}
+                {r.rq.map((q) => (
+                  <button key={q.id} className="chip px-rx-chip" onClick={() => onNav?.('agenda')} title="AGENDA タブで見る">
+                    {q.id} {q.name}
+                  </button>
+                ))}
+                {r.archetype && (
+                  <button className="chip px-rx-chip" onClick={() => onArch(r.archetype!)} title="減衰の台帳で見る">
+                    台帳: {ARCHETYPES.find((a) => a.key === r.archetype)?.name}
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })
+      )}
+      <p className="px-cav">正本: roadmap §2「境界×解 対応表」[設計判断]。処方は検討すべき選択肢の地図であり、設計判断はモード別の解析（log dec・SM）で行うこと。</p>
+    </div>
+  )
+}
+
 /* ═══════════════ BOUNDARIES（境界地図・計算機） ═══════════════ */
-function BoundariesView() {
+function BoundariesView({
+  onCase, onArch, onNav,
+}: {
+  onCase: (bnd: string) => void; onArch: (key: string) => void; onNav?: (tab: string) => void
+}) {
   const [inp, setInp] = useState<MachineInput>({ ...PRESETS[0].inp })
   const [preset, setPreset] = useState<string | null>(PRESETS[0].key)
   const set = (patch: Partial<MachineInput>) => {
@@ -346,6 +438,9 @@ function BoundariesView() {
         })}
       </div>
 
+      {/* RX 処方箋 */}
+      <RxPanel v={v} calc={calc} inp={inp} onCase={onCase} onArch={onArch} onNav={onNav} />
+
       {/* B1–B3 スケール */}
       <div className="px-cards">
         <div className="panel px-card">
@@ -355,13 +450,13 @@ function BoundariesView() {
             min={1e5} max={1e7} log value={calc.dn}
             ticks={[1e5, 1e6, 1e7]} fmt={(t) => (t === 1e5 ? '10⁵' : t === 1e6 ? '10⁶' : '10⁷')}
             zones={[
-              { from: 1e5, to: 5e5, label: 'グリース余裕', color: 'var(--ok)' },
+              { from: 1e5, to: 5e5, label: 'グリース（保守目安）', color: 'var(--ok)' },
               { from: 5e5, to: 1e6, label: '上限接近', color: 'var(--gold)' },
               { from: 1e6, to: 3e6, label: '境界帯（1–3×10⁶）', color: 'var(--warn)' },
               { from: 3e6, to: 1e7, label: '油膜／ガス／AMB', color: 'var(--navy)' },
             ]}
           />
-          <p className="px-note">{BOUNDARIES[0].detail}</p>
+          <p className="px-note">{BOUNDARIES[0].detail}　※このバーは DN/dmn を区別しない一次目安。</p>
           <p className="px-cav">{BOUNDARIES[0].caution}　<Cites refs={BOUNDARIES[0].sources} /></p>
         </div>
 
@@ -396,7 +491,7 @@ function BoundariesView() {
             ticks={[0.1, 0.7, 1, 1.4, 10]} fmt={(t) => String(t)}
             zones={[
               { from: 0.1, to: 0.7, label: '亜臨界', color: 'var(--ok)' },
-              { from: 0.7, to: 1.4, label: '一次曲げ近接', color: 'var(--gold)' },
+              { from: 0.7, to: 1.4, label: '臨界近接・通過帯', color: 'var(--gold)' },
               { from: 1.4, to: 10, label: '超臨界運転域', color: 'var(--navy)' },
             ]}
           />
@@ -421,6 +516,13 @@ function BoundariesView() {
           <div className="panel px-card" key={b.id}>
             <h3><b>{b.id}</b> <small>{b.name}</small></h3>
             <div className="px-law">{b.law}</div>
+            {b.id === 'B8' && (
+              <div className="px-law">
+                e_per @ {inp.N.toLocaleString()} rpm = <b>{((2.5 / ((2 * Math.PI * inp.N) / 60)) * 1000).toFixed(2)}</b> μm
+                <small>（G2.5）</small>　/　<b>{((6.3 / ((2 * Math.PI * inp.N) / 60)) * 1000).toFixed(2)}</b> μm
+                <small>（G6.3）</small>
+              </div>
+            )}
             <p className="px-note">
               {b.detail}
               {b.id === 'B5' && inp.motor && (
@@ -468,8 +570,7 @@ function BoundariesView() {
 }
 
 /* ═══════════════ LEDGER（減衰の台帳） ═══════════════ */
-function LedgerView() {
-  const [arch, setArch] = useState<string | null>(null)
+function LedgerView({ arch, setArch }: { arch: string | null; setArch: (a: string | null) => void }) {
   const a = ARCHETYPES.find((x) => x.key === arch) || null
   const consume = LEDGER.filter((l) => l.side === 'consume')
   const supply = LEDGER.filter((l) => l.side === 'supply')
@@ -489,6 +590,7 @@ function LedgerView() {
       <div className={'px-li px-li-' + st + (it.side === 'consume' ? ' px-li-c' : ' px-li-s')}>
         <div className="px-li-h">
           <strong>{it.name}</strong>
+          {it.nature && <span className="px-vtag px-nat">{it.nature}</span>}
           {it.vec && <span className="px-vtag">{it.vec}</span>}
           {st === 'on' && <span className="px-ontag">{it.side === 'consume' ? '効いている' : '調達中'}</span>}
           {st === 'lost' && <span className="px-losttag">失った</span>}
@@ -509,11 +611,12 @@ function LedgerView() {
   return (
     <div>
       <p className="lede">
-        中心命題: 回転機械の進化は「エネルギー密度の上昇 × 受動減衰の喪失 × 連成の増加」であり、
-        機種を問わず<b>「減衰をどこから調達するか」という単一の収支問題</b>に収束する——
-        業界全体が、収入源（油膜）を手放しながら支出（クロスカップリング・UMP・系統事象）を増やしている。
-        機種を選ぶと、台帳のどこが動くかが見える。
-        <span className="px-caveat">留保: 減衰は座標系・モード依存で単一スカラーの収支ではない。log dec はモードごとに立てる。</span>
+        中心命題（二本柱）: 回転機械の進化は、機種を問わず<b>「配置問題」（危険速度をどこに置くか——
+        減衰を買っても解けない幾何学）と「収支問題」（減衰をどこから調達するか）の2つ</b>に収束する。
+        この台帳は収支問題側の帳簿——業界全体が、収入源（油膜）を手放しながら支出を増やしている。
+        消費側は性質で読む: <b>負減衰</b>＝収支に直接載る／<b>負剛性</b>＝配置を動かす（減衰追加では
+        解けない）／<b>強制励振</b>＝応答・疲労の問題。機種を選ぶと、台帳のどこが動くかが見える。
+        <span className="px-caveat">留保: 減衰は座標系・モード依存で単一スカラーの収支ではない。log dec はモードごとに立てる。同期不安定（Morton）は log dec に載らない例外条項。</span>
       </p>
 
       <div className="px-presets">
@@ -579,7 +682,7 @@ function LedgerView() {
               <span className="px-vid2">{vl.id}</span>
               <span className="px-vname">{vl.name}</span>
               <span className={'px-vside px-vside-' + vl.side}>
-                {vl.side === 'consume' ? '消費側 →' : vl.side === 'supply' ? '供給側 →' : '両側 →'}
+                {vl.side === 'consume' ? '消費側 →' : vl.side === 'supply' ? '供給側 →' : vl.side === 'loss' ? '供給喪失 →' : '両側 →'}
               </span>
               <span className="px-vrole">{vl.role}</span>
             </div>
@@ -657,8 +760,7 @@ const CASE_STATUS_COLOR: Record<string, string> = {
   計画: 'var(--dim)',
 }
 
-function CasesView() {
-  const [bnd, setBnd] = useState<string | null>(null)
+function CasesView({ bnd, setBnd }: { bnd: string | null; setBnd: (b: string | null) => void }) {
   const bnds = Array.from(new Set(CASES.flatMap((c) => c.bnds))).sort()
   const shown = bnd ? CASES.filter((c) => c.bnds.includes(bnd)) : CASES
   return (
@@ -713,8 +815,10 @@ function CasesView() {
 }
 
 /* ═══════════════ PHYSICS タブ本体 ═══════════════ */
-export default function PhysicsView() {
+export default function PhysicsView({ onNav }: { onNav?: (tab: string) => void }) {
   const [sub, setSub] = useState<'bnd' | 'ledger' | 'cases'>('bnd')
+  const [caseBnd, setCaseBnd] = useState<string | null>(null)
+  const [arch, setArch] = useState<string | null>(null)
   return (
     <div className="px">
       <div className="px-subnav">
@@ -729,7 +833,17 @@ export default function PhysicsView() {
         </button>
         <span className="px-subnote">構造層（無日付の物理）— ニュースでは書き換えない</span>
       </div>
-      {sub === 'bnd' ? <BoundariesView /> : sub === 'ledger' ? <LedgerView /> : <CasesView />}
+      {sub === 'bnd' ? (
+        <BoundariesView
+          onCase={(b) => { setCaseBnd(b); setSub('cases') }}
+          onArch={(a) => { setArch(a); setSub('ledger') }}
+          onNav={onNav}
+        />
+      ) : sub === 'ledger' ? (
+        <LedgerView arch={arch} setArch={setArch} />
+      ) : (
+        <CasesView bnd={caseBnd} setBnd={setCaseBnd} />
+      )}
     </div>
   )
 }

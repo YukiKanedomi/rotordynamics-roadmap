@@ -198,7 +198,7 @@ export default function App() {
           />
         )}
         {tab === 'story' && <StoryView />}
-        {tab === 'physics' && <PhysicsView />}
+        {tab === 'physics' && <PhysicsView onNav={(t) => go(t as Tab)} />}
         {tab === 'linkage' && <LinkageView isMobile={isMobile} />}
         {tab === 'drivers' && <DriversView onPick={(m, driver) => setActive({ m, driver })} />}
         {tab === 'rd' && (
