@@ -24,31 +24,39 @@ import {
 import { AGENDA, TIER_META, TOPIC_SPACE, TOPIC_SPACE_REFS, type AgendaTier } from './data/agenda'
 import { PLAYERS, PLAYER_GROUPS, MA_WATCH, REGION_FILTERS } from './data/players'
 import PhysicsView from './PhysicsView'
+import heroImg from './assets/story-hero.webp'
+import vecV1 from './assets/vec-v1.webp'
+import vecV2 from './assets/vec-v2.webp'
+import vecV3 from './assets/vec-v3.webp'
+import vecV4 from './assets/vec-v4.webp'
+import vecV5 from './assets/vec-v5.webp'
+
+const VEC_IMG: Record<string, string> = { V1: vecV1, V2: vecV2, V3: vecV3, V4: vecV4, V5: vecV5 }
 
 type Tab = 'board' | 'story' | 'physics' | 'linkage' | 'drivers' | 'rd' | 'agenda' | 'players' | 'sources'
-const TABS: [Tab, string][] = [
-  ['board', 'BOARD'],
-  ['story', 'STORY'],
-  ['physics', 'PHYSICS'],
-  ['linkage', 'LINKAGE'],
-  ['drivers', 'DRIVERS'],
-  ['rd', 'RD MAP'],
-  ['agenda', 'AGENDA'],
-  ['players', 'PLAYERS'],
-  ['sources', 'SOURCES'],
+const TABS: [Tab, string, string][] = [
+  ['board', 'BOARD', '全体像'],
+  ['story', 'STORY', 'なぜ'],
+  ['physics', 'PHYSICS', '設計限界'],
+  ['linkage', 'LINKAGE', '因果接続'],
+  ['drivers', 'DRIVERS', '外部要因'],
+  ['rd', 'RD MAP', '課題地図'],
+  ['agenda', 'AGENDA', '研究課題'],
+  ['players', 'PLAYERS', '主要企業'],
+  ['sources', 'SOURCES', '根拠資料'],
 ]
 
 const confKey = (c: Confidence) => (c === '確立' ? 'e' : c === '推定' ? 'p' : 'h')
 const confClass = (c: Confidence) => 'conf c-' + confKey(c)
 
 /* ───── ダッシュボード用メタ（チャンネル状態・KPI・ティッカー） ───── */
-const CHANNEL_META: Record<string, { st: string; w?: boolean; pct: number; note: string }> = {
-  D1: { st: 'TRACK', pct: 62, note: 'e-axle 20k→30k rpm ／ HP 180M→600M台' },
-  D2: { st: 'REV −24%', w: true, pct: 38, note: 'H2 FID 4Mtpa堅持 ／ 発表49→37Mtpa 下方修正' },
-  D3: { st: 'SURGE', pct: 84, note: '415→945 TWh ／ GT受注残 100 GW 完売' },
-  D4: { st: 'TRACK', pct: 55, note: '13.2 kW/kg ／ eVTOL 商用2027〜' },
-  D5: { st: 'TRACK', pct: 58, note: 'UQ実装期 ／ ISO 21940-12 改訂CD' },
-  D6: { st: 'NEW', pct: 47, note: '36 GVA.s 契約 ／ FW付き調相機 2025運開' },
+const CHANNEL_META: Record<string, { st: string; w?: boolean; note: string }> = {
+  D1: { st: 'TRACK', note: 'e-axle 20k→30k rpm ／ HP 180M→600M台' },
+  D2: { st: 'REV −24%', w: true, note: 'H2 FID 4Mtpa堅持 ／ 発表49→37Mtpa 下方修正' },
+  D3: { st: 'SURGE', note: '415→945 TWh ／ GT受注残 100 GW 完売' },
+  D4: { st: 'TRACK', note: '13.2 kW/kg ／ eVTOL 商用2027〜' },
+  D5: { st: 'TRACK', note: 'UQ実装期 ／ ISO 21940-12 改訂CD' },
+  D6: { st: 'NEW', note: '36 GVA.s 契約 ／ FW付き調相機 2025運開' },
 }
 
 const KPIS: {
@@ -56,12 +64,10 @@ const KPIS: {
   v: JSX.Element
   src: string
   srcKey?: string
-  pts?: string
-  col?: string
 }[] = [
-  { k: 'DC POWER DEMAND', v: <>415<small> → </small><span className="up">945</span><small> TWh 2030</small></>, src: 'IEA Energy & AI (2025)', srcKey: 'IEA-EnergyAI-2025', pts: '0,22 40,20 80,17 120,13 160,9 200,5 250,2', col: 'var(--ok)' },
-  { k: 'H2 ANNOUNCED PIPELINE', v: <>49<small> → </small><span className="dn">37</span><small> Mtpa</small></>, src: 'IEA GHR 2025 — 史上初の下方修正', srcKey: 'IEA-GHR-2025', pts: '0,6 60,5 120,8 180,14 250,20', col: 'var(--warn)' },
-  { k: 'GT ORDER BACKLOG', v: <>100<small> GW ／ SOLD-OUT 2031</small></>, src: 'GE Vernova 2026-Q1（二次）', srcKey: 'GEV-Backlog-2026', pts: '0,23 50,21 100,17 150,12 200,7 250,3', col: 'var(--navy)' },
+  { k: 'DC POWER DEMAND', v: <>415<small> → </small><span className="up">945</span><small> TWh 2030</small></>, src: 'IEA Energy & AI (2025)', srcKey: 'IEA-EnergyAI-2025' },
+  { k: 'H2 ANNOUNCED PIPELINE', v: <>49<small> → </small><span className="dn">37</span><small> Mtpa</small></>, src: 'IEA GHR 2025 — 史上初の下方修正', srcKey: 'IEA-GHR-2025' },
+  { k: 'GT ORDER BACKLOG', v: <>100<small> GW ／ SOLD-OUT 2031</small></>, src: 'GE Vernova 2026-Q1（二次）', srcKey: 'GEV-Backlog-2026' },
   { k: 'GRID INERTIA PROCURED (UK)', v: <>36<small> GVA·s ／ 2026 全量運開</small></>, src: 'NESO Stability Pathfinder', srcKey: 'NESO-Stability-2025' },
   { k: 'MOTOR SPECIFIC POWER', v: <>13.2<small> kW/kg @96% ／ EIS 2035–40</small></>, src: 'NASA EAP (2023)', srcKey: 'NASA-EAP-2023' },
 ]
@@ -176,9 +182,10 @@ export default function App() {
       </header>
 
       <nav className="nav">
-        {TABS.map(([k, label]) => (
+        {TABS.map(([k, label, sub]) => (
           <button key={k} className={tab === k ? 'nv on' : 'nv'} onClick={() => go(k)}>
             {label}
+            <small className="nv-sub">{sub}</small>
           </button>
         ))}
         <button className={'pcbtn' + (pcMode ? ' on' : '')} onClick={() => setPcMode(!pcMode)}
@@ -188,6 +195,19 @@ export default function App() {
         <span className="nav-note">実線=〜2035 ／ 破線=2035〜 ／ 定量は一次資料のみ</span>
       </nav>
 
+      <div className="rd-guide">
+        <span className="rd-guide-l">読む順序</span>
+        {([['board', '① 全体像を掴む', 'BOARD'], ['story', '② なぜそうなるか', 'STORY'], ['physics', '③ どこが限界か', 'PHYSICS']] as [Tab, string, string][]).map(([k, t, l], i) => (
+          <span key={k} className="rd-guide-step">
+            {i > 0 && <span className="rd-guide-a">→</span>}
+            <button className={'rd-guide-b' + (tab === k ? ' on' : '')} onClick={() => go(k)}>
+              {t} <b>{l}</b>
+            </button>
+          </span>
+        ))}
+        <span className="rd-guide-r">他のタブは深掘り用（因果・課題・企業・出典）</span>
+      </div>
+
       <main className="main">
         {tab === 'board' && (
           <BoardView
@@ -195,6 +215,7 @@ export default function App() {
             rdFilter={rdFilter}
             setRdFilter={setRdFilter}
             onPick={(m, driver) => setActive({ m, driver })}
+            onNavTab={go}
           />
         )}
         {tab === 'story' && <StoryView />}
@@ -234,17 +255,47 @@ function BoardView({
   rdFilter,
   setRdFilter,
   onPick,
+  onNavTab,
 }: {
   isMobile: boolean
   rdFilter: string | null
   setRdFilter: (k: string | null) => void
   onPick: (m: Milestone, d: Driver) => void
+  onNavTab: (t: Tab) => void
 }) {
   return (
     <div className="board-grid">
+      {/* 最上段: このロードマップの結論 */}
+      <section className="panel concl">
+        <div className="concl-main">
+          <h2>
+            2035年に向け、回転機械の設計は「危険速度をどこに置くか（配置）」と
+            「減衰をどこから調達するか（収支）」の2問に収束する
+          </h2>
+          <div className="concl-rows">
+            <div className="concl-row">
+              <span className="concl-k">外部変化</span>
+              <span>脱炭素・電動化・AI電力需要が全機種に同時に効く（D1–D6）</span>
+            </div>
+            <div className="concl-row">
+              <span className="concl-k">技術変化</span>
+              <span>油フリー・超高速・モータ一体・極端流体・デジタルの5本に収束（V1–V5）</span>
+            </div>
+            <div className="concl-row">
+              <span className="concl-k">設計課題</span>
+              <span>減衰の定量化・流体構造連成・電磁連成が最難関になる（B1–B8）</span>
+            </div>
+          </div>
+        </div>
+        <div className="concl-nav">
+          <button className="concl-go" onClick={() => onNavTab('story')}>なぜそうなるか → STORY</button>
+          <button className="concl-go" onClick={() => onNavTab('physics')}>設計限界を見る → PHYSICS</button>
+        </div>
+      </section>
+
       {/* 左: ドライバ・チャンネル */}
       <section className="panel">
-        <h3><b>CH 01–06</b> 需要ドライバ・チャンネル</h3>
+        <h3><b>DRIVERS</b> 何が市場を動かすか</h3>
         <div className="ch">
           {DRIVERS.map((d) => {
             const meta = CHANNEL_META[d.id]
@@ -256,7 +307,6 @@ function BoardView({
                   </span>
                   <span className={'st' + (meta.w ? ' w' : '')}>{meta.st}</span>
                 </div>
-                <div className="bar"><i style={{ width: meta.pct + '%' }} /></div>
                 <small>{meta.note}</small>
               </div>
             )
@@ -267,7 +317,7 @@ function BoardView({
       {/* 中央: メインボード */}
       <section className="panel">
         <div className="panel-head">
-          <h3><b>MAIN BOARD</b> 二層タイムライン</h3>
+          <h3><b>MILESTONES</b> いつ何が起きるか — 二層タイムライン</h3>
           <div className="chips">
             <button className={rdFilter === null ? 'chip on' : 'chip'} onClick={() => setRdFilter(null)}>
               ALL
@@ -294,15 +344,11 @@ function BoardView({
 
       {/* 右: KPI レール */}
       <section className="kpis">
+        <h3 className="kpis-h"><b>SIGNALS</b> 変化を測る先行指標</h3>
         {KPIS.map((kpi) => (
           <div className="kpi" key={kpi.k}>
             <div className="k">{kpi.k}</div>
             <div className="v">{kpi.v}</div>
-            {kpi.pts && (
-              <svg className="spark" width="100%" height="26" viewBox="0 0 250 26" preserveAspectRatio="none">
-                <polyline points={kpi.pts} fill="none" style={{ stroke: kpi.col }} strokeWidth="2" />
-              </svg>
-            )}
             <div className="src">{kpi.src}</div>
           </div>
         ))}
@@ -384,6 +430,7 @@ const HLABEL: Record<Horizon, string> = {
   '〜2035': '近中期',
   '2035〜': '長期・シナリオ',
 }
+type Density = 'key' | 'std' | 'full'
 function BoardMobile({
   rdFilter,
   onPick,
@@ -391,12 +438,22 @@ function BoardMobile({
   rdFilter: string | null
   onPick: (m: Milestone, d: Driver) => void
 }) {
+  const [dens, setDens] = useState<Density>('std')
   return (
     <div className="vtl">
+      <div className="vt-dens">
+        <span className="vt-dens-l">表示密度</span>
+        {([['key', '要点'], ['std', '標準'], ['full', '根拠込み']] as [Density, string][]).map(([k, l]) => (
+          <button key={k} className={'chip' + (dens === k ? ' on' : '')} onClick={() => setDens(k)}>{l}</button>
+        ))}
+        {dens === 'key' && <small className="vt-dens-n">確立のみ表示</small>}
+      </div>
       {HORIZONS.map((h) => {
         const items = DRIVERS.flatMap((d) =>
           d.milestones.filter((m) => m.horizon === h).map((m) => ({ m, d })),
-        ).filter(({ m }) => !rdFilter || m.rd.includes(rdFilter))
+        )
+          .filter(({ m }) => !rdFilter || m.rd.includes(rdFilter))
+          .filter(({ m }) => dens !== 'key' || m.confidence === '確立')
         return (
           <section className={'vt-sec' + (h === '2035〜' ? ' future' : '')} key={h}>
             <div className="vt-head">
@@ -407,10 +464,11 @@ function BoardMobile({
             {items.map(({ m, d }) => (
               <button key={m.id} className="vt-card" style={{ borderLeftColor: RD_COLORS[m.rd[0]] ?? 'var(--dim2)' }} onClick={() => onPick(m, d)}>
                 <span className="vt-row">
-                  <span className="vt-driver"><b>{d.id}</b> {d.name}</span>
+                  <span className="vt-driver"><DriverIcon id={d.id} className="vt-ico" /><b>{d.id}</b> {d.name}</span>
                   <span className={confClass(m.confidence)}>{m.confidence}</span>
                 </span>
                 <span className="vt-title">{m.title}</span>
+                {dens === 'full' && <span className="vt-detail">{m.detail}</span>}
               </button>
             ))}
           </section>
@@ -443,18 +501,96 @@ function Cite({ refs }: { refs: string[] }) {
   )
 }
 
+/* STORY の章構成: NARRATIVE 11文を4章に分ける */
+const STORY_CHAPTERS: { title: string; summary: string; range: [number, number] }[] = [
+  { title: 'なぜ今変わるのか', summary: '脱炭素・電化・AIの3潮流が、回転機械への要求を「高速・高出力密度・油フリー・極端流体」へ一斉に押している。', range: [0, 1] },
+  { title: '市場・用途別に何が起きるか', summary: '航空・エネルギー転換・データセンター・系統——用途ごとに形は違うが、要求はどれも同じ方向を向く。', range: [2, 5] },
+  { title: '技術はどこへ収束するか', summary: '機種を超えて進化方向は5本のベクトルに収束し、古典的なロータダイナミクス難問が新条件で再来する。', range: [6, 8] },
+  { title: '設計・規格はどう変わるか', summary: '解は先進軸受・能動制御・不確かさ定量化へ向かい、規格の整備がロードマップ後半の到達点になる。', range: [9, 10] },
+]
+
+/* 章間の因果図（HTML/CSSベース） */
+function FlowDia({ cols, result, note }: { cols: { head: string; body: string }[]; result: string; note?: string }) {
+  return (
+    <div className="flowdia">
+      <div className="flowdia-cols">
+        {cols.map((c) => (
+          <div className="flowdia-col" key={c.head}>
+            <b>{c.head}</b>
+            <span>{c.body}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flowdia-arrow">↓</div>
+      <div className="flowdia-result">{result}</div>
+      {note && <div className="flowdia-note">{note}</div>}
+    </div>
+  )
+}
+
+const STORY_DIAGRAMS: Record<number, JSX.Element> = {
+  0: (
+    <FlowDia
+      cols={[
+        { head: '脱炭素', body: 'ネットゼロ2050の長期目標' },
+        { head: '電化', body: '輸送・産業の電動化' },
+        { head: 'AI', body: '電力需要の倍増' },
+      ]}
+      result="回転機械への要求: より高速・高出力密度・潤滑油フリー・極端な作動流体"
+    />
+  ),
+  1: (
+    <FlowDia
+      cols={[
+        { head: '航空', body: '軽量薄肉・超高速ロータ' },
+        { head: 'エネルギー', body: '水素・sCO₂の極端流体' },
+        { head: 'データセンター', body: '油フリー・連続運転' },
+        { head: '系統', body: '慣性を売る回転機械' },
+      ]}
+      result="共通要求: 高出力密度 × 低損失 × 動的安定性"
+    />
+  ),
+  2: (
+    <FlowDia
+      cols={[
+        { head: 'V1–V5', body: '油フリー・超高速・モータ一体・極端流体・デジタル' },
+      ]}
+      result="課題の核心: 減衰の定量化と流体-構造連成 → 設計限界 B1–B8（PHYSICSタブ）"
+      note="5本のベクトルはどれも「減衰の供給源を手放しながら、減衰の需要を増やす」方向に働く"
+    />
+  ),
+}
+
 function StoryView() {
   return (
     <div className="story panel">
-      <h3><b>NARRATIVE</b> なぜこのロードマップになるのか — 11文・各文に一次出典</h3>
-      <ol className="narr">
-        {NARRATIVE.map((n, i) => (
-          <li key={i}>
-            <span className="narr-t">{n.text}</span>
-            <Cite refs={n.refs} />
-          </li>
-        ))}
-      </ol>
+      <div className="story-hero">
+        <img src={heroImg} alt="将来の回転機械システムの断面イラスト" loading="lazy" />
+        <div className="story-hero-txt">
+          <h2>なぜこのロードマップになるのか</h2>
+          <p>11の事実を4章でたどる — 各文に一次出典</p>
+        </div>
+      </div>
+      {STORY_CHAPTERS.map((ch, ci) => (
+        <section className="story-ch" key={ci}>
+          <div className="story-ch-head">
+            <span className="story-ch-n">{ci + 1}</span>
+            <div>
+              <h3>{ch.title}</h3>
+              <p className="story-ch-sum">{ch.summary}</p>
+            </div>
+          </div>
+          <ol className="narr">
+            {NARRATIVE.slice(ch.range[0], ch.range[1] + 1).map((n, i) => (
+              <li key={i} style={{ counterReset: `n ${ch.range[0] + i}` }}>
+                <span className="narr-t">{n.text}</span>
+                <Cite refs={n.refs} />
+              </li>
+            ))}
+          </ol>
+          {STORY_DIAGRAMS[ci]}
+        </section>
+      ))}
       <blockquote className="anchor">
         <p>“{ANCHOR.quote}”</p>
         <footer>— {ANCHOR.attribution} <Cite refs={[ANCHOR.ref]} /></footer>
@@ -464,6 +600,7 @@ function StoryView() {
         {VECTORS.map((v) => (
           <div className="theme" key={v.id}>
             <div className="v-id">{v.id}</div>
+            {VEC_IMG[v.id] && <img className="v-img" src={VEC_IMG[v.id]} alt="" loading="lazy" />}
             <div className="v-body">
               <strong>{v.name}</strong>
               <p>{v.detail}</p>

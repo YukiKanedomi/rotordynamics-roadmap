@@ -614,3 +614,89 @@ a { color: var(--navy); }
 .px-rx-chip { font-size: 9.5px; cursor: pointer; }
 .px-nat { color: var(--warn); border-color: var(--warn); }
 .px-vside-loss { color: var(--warn); }
+
+/* ═══════ 2026-07 見やすさ改修 ═══════ */
+
+/* ---- タブ副題・読む順序ガイド ---- */
+.nv { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; }
+.nv-sub { font-family: var(--mono); font-size: 8px; color: var(--dim2); letter-spacing: .04em; font-weight: 400; }
+.nv.on .nv-sub { color: var(--dim); }
+.rd-guide { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: -6px 0 14px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.rd-guide-l { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; color: var(--dim); }
+.rd-guide-step { display: inline-flex; align-items: baseline; gap: 8px; }
+.rd-guide-a { color: var(--dim2); font-size: 11px; }
+.rd-guide-b { border: none; background: none; font: inherit; font-size: 11px; color: var(--soft); cursor: pointer; padding: 2px 4px; }
+.rd-guide-b b { font-family: var(--mono); font-size: 10px; color: var(--navy); }
+.rd-guide-b:hover { color: var(--ink); }
+.rd-guide-b.on { color: var(--ink); font-weight: 700; border-bottom: 2px solid var(--ink); }
+.rd-guide-r { font-family: var(--mono); font-size: 9px; color: var(--dim2); margin-left: auto; }
+
+/* ---- BOARD 結論パネル ---- */
+.concl { grid-column: 1 / -1; display: flex; gap: 24px; align-items: center; justify-content: space-between; border-top: 3px solid var(--ink); }
+.concl-main h2 { font-size: 17px; line-height: 1.75; margin: 0 0 10px; max-width: 46em; }
+.concl-rows { display: flex; flex-direction: column; gap: 3px; }
+.concl-row { display: flex; gap: 10px; align-items: baseline; font-size: 12px; color: var(--soft); }
+.concl-k { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; color: var(--navy); border: 1px solid var(--line); padding: 1px 7px; flex-shrink: 0; }
+.concl-nav { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.concl-go { font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; border: 1px solid var(--ink); background: none; color: var(--ink); padding: 8px 14px; cursor: pointer; }
+.concl-go:hover { background: var(--ink); color: var(--bg); }
+.kpis-h { font-size: 11px; margin: 0 0 2px; }
+.kpis-h b { font-family: var(--mono); letter-spacing: .1em; font-size: 10px; }
+
+/* ---- STORY ヒーロー・章立て・因果図 ---- */
+.story-hero { position: relative; margin: 0 0 18px; border: 1px solid var(--line); overflow: hidden; }
+.story-hero img { display: block; width: 100%; height: 220px; object-fit: cover; object-position: center 40%; opacity: .92; }
+.story-hero-txt { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 18px 12px; background: linear-gradient(transparent, rgba(250, 250, 248, .96) 55%); }
+.story-hero-txt h2 { margin: 0; font-size: 18px; }
+.story-hero-txt p { margin: 2px 0 0; font-family: var(--mono); font-size: 10px; color: var(--dim); }
+.story-ch { margin-bottom: 10px; }
+.story-ch-head { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0 4px; border-top: 2px solid var(--ink); }
+.story-ch-n { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.story-ch-head h3 { margin: 0; font-size: 15px; }
+.story-ch-sum { margin: 3px 0 0; font-size: 12.5px; color: var(--soft); line-height: 1.8; max-width: 56em; }
+.flowdia { margin: 14px 0 6px; padding: 14px 16px; background: var(--sink); text-align: center; }
+.flowdia-cols { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.flowdia-col { border: 1px solid var(--line); background: var(--bg); padding: 7px 12px; min-width: 130px; }
+.flowdia-col b { display: block; font-size: 12px; color: var(--navy); }
+.flowdia-col span { font-size: 10.5px; color: var(--dim); }
+.flowdia-arrow { color: var(--dim); font-size: 13px; margin: 4px 0; }
+.flowdia-result { display: inline-block; border: 1.5px solid var(--navy); color: var(--navy); font-size: 12px; font-weight: 600; padding: 7px 16px; background: var(--bg); }
+.flowdia-note { font-size: 10.5px; color: var(--dim); margin-top: 7px; }
+.v-img { width: 74px; height: 74px; object-fit: cover; border: 1px solid var(--line); flex-shrink: 0; }
+
+/* ---- スマホ BOARD: 密度切替・アイコン ---- */
+.vt-dens { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+.vt-dens-l { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: .1em; }
+.vt-dens-n { font-family: var(--mono); font-size: 9px; color: var(--dim2); }
+.vt-ico { width: 14px; height: 14px; vertical-align: -3px; margin-right: 4px; }
+.vt-detail { display: block; font-size: 11.5px; color: var(--soft); line-height: 1.7; margin-top: 4px; }
+
+/* ---- PHYSICS: B1-B8 一覧・折りたたみ・模式図・余裕量 ---- */
+.px-over { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.px-ov { border: 1px solid var(--line); border-top: 3px solid var(--dim2); background: var(--bg); text-align: left; padding: 9px 11px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; font: inherit; }
+.px-ov:hover { border-color: var(--dim); }
+.px-ov-h b { font-family: var(--mono); font-size: 12px; }
+.px-ov-h small { font-family: var(--mono); font-size: 8px; color: var(--dim2); letter-spacing: .06em; }
+.px-ov-nm { font-size: 11.5px; font-weight: 600; line-height: 1.5; }
+.px-ov-val { font-family: var(--mono); font-size: 11px; color: var(--ink); }
+.px-ov-st { font-size: 10px; line-height: 1.5; }
+.px-sec-h { display: flex; gap: 10px; align-items: baseline; width: 100%; border: none; background: none; font: inherit; text-align: left; cursor: pointer; padding: 0; }
+.px-sec-h h3 { margin: 0; flex: 1; }
+.px-sec-badge { font-size: 10px; line-height: 1.5; max-width: 40%; }
+.px-sec-tg { font-family: var(--mono); font-size: 13px; color: var(--dim); flex-shrink: 0; }
+.px-sec:not(.open) { padding-bottom: 10px; }
+.px-sec-b { margin-top: 8px; }
+.px-sk { display: block; width: min(250px, 100%); margin: 2px auto 6px; }
+.px-sk-t { font-family: var(--mono); font-size: 8.5px; }
+.px-margin { font-size: 11px; color: var(--soft); margin: 2px 0 8px; padding: 5px 9px; background: var(--sink); }
+.px-margin b { font-family: var(--mono); }
+
+@media (max-width: 820px) {
+  .rd-guide-r { display: none; }
+  .concl { flex-direction: column; align-items: stretch; gap: 12px; }
+  .concl-nav { flex-direction: row; }
+  .concl-go { flex: 1; }
+  .px-over { grid-template-columns: 1fr 1fr; }
+  .story-hero img { height: 150px; }
+  .flowdia-col { min-width: 0; flex: 1 1 40%; }
+}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { SOURCE_MAP, SOLUTIONS, RD_COLORS, CHIP_LABEL, ANCHOR } from './data/roadmap'
 import {
   BOUNDARIES,
@@ -15,6 +15,7 @@ import {
   type MachineInput,
 } from './data/physics'
 import { CASES } from './data/cases'
+import { BndSketch } from './sketches'
 
 /* ───── 小物 ───── */
 function Cites({ refs }: { refs: string[] }) {
@@ -140,6 +141,63 @@ function ScaleBar({
       <line x1={vx} x2={vx} y1={10} y2={38} stroke="var(--ink)" strokeWidth={1.6} />
       <path d={`M ${vx - 4.5} 10 L ${vx + 4.5} 10 L ${vx} 17 Z`} fill="var(--ink)" />
     </svg>
+  )
+}
+
+/* ───── 境界の帯定義（スケールバーと余裕量表示で共用） ───── */
+const B1_ZONES: Zone[] = [
+  { from: 1e5, to: 5e5, label: 'グリース（保守目安）', color: 'var(--ok)' },
+  { from: 5e5, to: 1e6, label: '上限接近', color: 'var(--gold)' },
+  { from: 1e6, to: 3e6, label: '境界帯（1–3×10⁶）', color: 'var(--warn)' },
+  { from: 3e6, to: 1e7, label: '油膜／ガス／AMB', color: 'var(--navy)' },
+]
+const B2_ZONES: Zone[] = [
+  { from: 0, to: 250, label: '電機ロータ実績帯（≤245実測）', color: 'var(--ok)' },
+  { from: 250, to: 300, label: 'スリーブPM上限', color: 'var(--gold)' },
+  { from: 300, to: 400, label: '最高峰報告帯', color: 'var(--warn)' },
+  { from: 400, to: 550, label: 'Tiインペラ帯（550=Ti必須）', color: 'var(--warn)' },
+  { from: 550, to: 600, label: '実績超', color: 'var(--navy)' },
+]
+const B3_ZONES: Zone[] = [
+  { from: 0.1, to: 0.7, label: '亜臨界', color: 'var(--ok)' },
+  { from: 0.7, to: 1.4, label: '臨界近接・通過帯', color: 'var(--gold)' },
+  { from: 1.4, to: 10, label: '超臨界運転域', color: 'var(--navy)' },
+]
+
+/* ───── 余裕量（現在値と次の帯までの距離） ───── */
+function MarginNote({
+  value, zones, fmt, unit,
+}: {
+  value: number; zones: Zone[]; fmt: (v: number) => string; unit: string
+}) {
+  const idx = zones.findIndex((z) => value >= z.from && value < z.to)
+  const cur = idx >= 0 ? zones[idx] : zones[zones.length - 1]
+  const next = idx >= 0 ? zones[idx + 1] : undefined
+  return (
+    <p className="px-margin">
+      現在 <b>{fmt(value)} {unit}</b> ｜ {cur.label}
+      {next && <>　→　次の帯「{next.label}」まで <b>{fmt(next.from - value)} {unit}</b></>}
+    </p>
+  )
+}
+
+/* ───── 折りたたみ節（境界カード用） ───── */
+function Sec({
+  id, title, badge, badgeColor, defaultOpen, children,
+}: {
+  id: string; title: string; badge?: string; badgeColor?: string
+  defaultOpen: boolean; children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className={'panel px-card px-sec' + (open ? ' open' : '')} id={'sec-' + id}>
+      <button className="px-sec-h" onClick={() => setOpen(!open)}>
+        <h3><b>{id}</b> <small>{title}</small></h3>
+        {badge && <span className="px-sec-badge" style={{ color: badgeColor }}>{badge}</span>}
+        <span className="px-sec-tg">{open ? '−' : '＋'}</span>
+      </button>
+      {open && <div className="px-sec-b">{children}</div>}
+    </div>
   )
 }
 
@@ -370,19 +428,56 @@ function BoundariesView({
   const calc = useMemo(() => calcAll(inp), [inp])
   const v = useMemo(() => verdicts(calc), [calc])
   const infoBs = BOUNDARIES.filter((b) => !b.calc)
+  const hot = (id: string) => v[id].level === 'warn' || v[id].level === 'navy'
 
   return (
     <div>
       <p className="lede">
-        L2→L3 の翻訳（機械の変化がどこでロータダイナミクス課題を強制するか）を、方向でなく<b>閾値</b>で持つ——
-        それがこの地図の主張です。諸元を入れると、あなたの機械が B1〜B4 のどの壁にいるかを即時判定します。
+        機械の高速化・油フリー化がどこでロータダイナミクス課題を強制するかを、方向でなく<b>閾値</b>で持つ——
+        それがこの地図の主張です。まず下の8枚のカードで「どんな壁があるか」を掴み、
+        次に諸元を入れると、あなたの機械がどの壁にいるかを即時判定します。
         企業名や政策が変わっても、この境界の物理は変わりません。
         <span className="px-caveat">数値はすべて一次目安（均一軸・理想気体・代表帯）。確度の留保は各カードに明記。</span>
       </p>
 
+      {/* B1〜B8 一覧カード */}
+      <div className="px-over">
+        {BOUNDARIES.map((b) => {
+          const vd = v[b.id]
+          const val =
+            b.id === 'B1' ? fmtSI(calc.dn) + ' mm·rpm'
+            : b.id === 'B2' ? calc.U.toFixed(0) + ' m/s'
+            : b.id === 'B3' ? 'N/f₁ = ' + calc.ratio.toFixed(2)
+            : b.id === 'B4' ? 'MW·ρd = ' + fmtSI(calc.prod)
+            : b.id === 'B8' ? 'e_per(G2.5) = ' + ((2.5 / ((2 * Math.PI * inp.N) / 60)) * 1000).toFixed(2) + ' μm'
+            : null
+          const status = vd
+            ? vd.text
+            : b.id === 'B5'
+              ? (inp.motor ? 'モータ一体=YES — この機械で効く' : '対象外（モータ非一体）')
+              : '解説カード（クリックで下へ）'
+          const color = vd
+            ? LV_COLOR[vd.level]
+            : b.id === 'B5' && inp.motor ? LV_COLOR.navy : 'var(--dim2)'
+          return (
+            <button
+              key={b.id}
+              className="px-ov"
+              style={{ borderTopColor: color }}
+              onClick={() => document.getElementById('sec-' + b.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            >
+              <span className="px-ov-h"><b>{b.id}</b> <small>{b.en}</small></span>
+              <span className="px-ov-nm">{b.name}</span>
+              {val && <span className="px-ov-val">{val}</span>}
+              <span className="px-ov-st" style={{ color }}>{status}</span>
+            </button>
+          )
+        })}
+      </div>
+
       {/* 入力 */}
       <div className="panel px-inputs">
-        <h3><b>INPUT</b> <small>機械の諸元 — プリセットから始めて動かす</small></h3>
+        <h3><b>INPUT</b> <small>機械条件を変えて境界を再判定する — プリセットから始めて動かす</small></h3>
         <div className="px-presets">
           {PRESETS.map((p) => (
             <button
@@ -419,69 +514,44 @@ function BoundariesView({
         </div>
       </div>
 
-      {/* 判定サマリ */}
-      <div className="px-verdicts">
-        {(['B1', 'B2', 'B3', 'B4'] as const).map((id) => {
-          const b = BOUNDARIES.find((x) => x.id === id)!
-          const val =
-            id === 'B1' ? fmtSI(calc.dn) + ' mm·rpm'
-            : id === 'B2' ? calc.U.toFixed(0) + ' m/s'
-            : id === 'B3' ? 'N/f₁ = ' + calc.ratio.toFixed(2)
-            : 'MW·ρd = ' + fmtSI(calc.prod)
-          return (
-            <div className="px-verdict" key={id} style={{ borderTopColor: LV_COLOR[v[id].level] }}>
-              <div className="px-vid">{id} <span>{b.en}</span></div>
-              <div className="px-vval">{val}</div>
-              <div className="px-vtext" style={{ color: LV_COLOR[v[id].level] }}>{v[id].text}</div>
-            </div>
-          )
-        })}
-      </div>
-
       {/* RX 処方箋 */}
       <RxPanel v={v} calc={calc} inp={inp} onCase={onCase} onArch={onArch} onNav={onNav} />
 
       {/* B1–B3 スケール */}
       <div className="px-cards">
-        <div className="panel px-card">
-          <h3><b>B1</b> <small>DN値境界 — 転がり軸受の壁</small></h3>
+        <Sec id="B1" title="DN値境界 — 転がり軸受の壁" defaultOpen={hot('B1')}
+          badge={v.B1.text} badgeColor={LV_COLOR[v.B1.level]}>
+          <BndSketch id="B1" />
           <div className="px-law">DN = d × N = <b>{fmtSI(calc.dn)}</b> mm·rpm</div>
           <ScaleBar
             min={1e5} max={1e7} log value={calc.dn}
             ticks={[1e5, 1e6, 1e7]} fmt={(t) => (t === 1e5 ? '10⁵' : t === 1e6 ? '10⁶' : '10⁷')}
-            zones={[
-              { from: 1e5, to: 5e5, label: 'グリース（保守目安）', color: 'var(--ok)' },
-              { from: 5e5, to: 1e6, label: '上限接近', color: 'var(--gold)' },
-              { from: 1e6, to: 3e6, label: '境界帯（1–3×10⁶）', color: 'var(--warn)' },
-              { from: 3e6, to: 1e7, label: '油膜／ガス／AMB', color: 'var(--navy)' },
-            ]}
+            zones={B1_ZONES}
           />
+          <MarginNote value={calc.dn} zones={B1_ZONES} fmt={fmtSI} unit="mm·rpm" />
           <p className="px-note">{BOUNDARIES[0].detail}　※このバーは DN/dmn を区別しない一次目安。</p>
           <p className="px-cav">{BOUNDARIES[0].caution}　<Cites refs={BOUNDARIES[0].sources} /></p>
-        </div>
+        </Sec>
 
-        <div className="panel px-card">
-          <h3><b>B2</b> <small>周速壁 — σ_θ ≈ ρU²</small></h3>
+        <Sec id="B2" title="周速壁 — σ_θ ≈ ρU²" defaultOpen={hot('B2')}
+          badge={v.B2.text} badgeColor={LV_COLOR[v.B2.level]}>
+          <BndSketch id="B2" />
           <div className="px-law">
             U = πDN/60 = <b>{calc.U.toFixed(0)}</b> m/s　→　σ_θ ≈ <b>{calc.sigma.toFixed(0)}</b> MPa <small>(鋼 ρ=7,850)</small>
           </div>
           <ScaleBar
             min={0} max={600} value={calc.U}
             ticks={[0, 250, 300, 400, 550]} fmt={(t) => String(t)}
-            zones={[
-              { from: 0, to: 250, label: '電機ロータ実績帯（≤245実測）', color: 'var(--ok)' },
-              { from: 250, to: 300, label: 'スリーブPM上限', color: 'var(--gold)' },
-              { from: 300, to: 400, label: '最高峰報告帯', color: 'var(--warn)' },
-              { from: 400, to: 550, label: 'Tiインペラ帯（550=Ti必須）', color: 'var(--warn)' },
-              { from: 550, to: 600, label: '実績超', color: 'var(--navy)' },
-            ]}
+            zones={B2_ZONES}
           />
+          <MarginNote value={calc.U} zones={B2_ZONES} fmt={(x) => x.toFixed(0)} unit="m/s" />
           <p className="px-note">{BOUNDARIES[1].detail}</p>
           <p className="px-cav">{BOUNDARIES[1].caution}　<Cites refs={BOUNDARIES[1].sources} /></p>
-        </div>
+        </Sec>
 
-        <div className="panel px-card">
-          <h3><b>B3</b> <small>超臨界化 — 一次曲げとの比</small></h3>
+        <Sec id="B3" title="超臨界化 — 一次曲げとの比" defaultOpen={hot('B3')}
+          badge={v.B3.text} badgeColor={LV_COLOR[v.B3.level]}>
+          <BndSketch id="B3" />
           <div className="px-law">
             f₁ ≈ <b>{calc.f1 < 100 ? calc.f1.toFixed(1) : calc.f1.toFixed(0)}</b> Hz <small>(均一鋼軸・単純支持)</small>
             　／　N = <b>{calc.fN.toFixed(0)}</b> Hz　→　N/f₁ = <b>{calc.ratio.toFixed(2)}</b>
@@ -489,32 +559,32 @@ function BoundariesView({
           <ScaleBar
             min={0.1} max={10} log value={Math.min(10, Math.max(0.1, calc.ratio))}
             ticks={[0.1, 0.7, 1, 1.4, 10]} fmt={(t) => String(t)}
-            zones={[
-              { from: 0.1, to: 0.7, label: '亜臨界', color: 'var(--ok)' },
-              { from: 0.7, to: 1.4, label: '臨界近接・通過帯', color: 'var(--gold)' },
-              { from: 1.4, to: 10, label: '超臨界運転域', color: 'var(--navy)' },
-            ]}
+            zones={B3_ZONES}
           />
+          <MarginNote value={calc.ratio} zones={B3_ZONES} fmt={(x) => x.toFixed(2)} unit="" />
           <p className="px-note">{BOUNDARIES[2].detail}</p>
           <p className="px-cav">{BOUNDARIES[2].caution}</p>
-        </div>
+        </Sec>
       </div>
 
       {/* B4 マップ */}
-      <div className="panel px-card">
-        <h3><b>B4</b> <small>Wachel境界 — 作動流体がどちらの壁に送るか</small></h3>
+      <Sec id="B4" title="Wachel境界 — 作動流体がどちらの壁に送るか" defaultOpen={hot('B4')}
+        badge={v.B4.text} badgeColor={LV_COLOR[v.B4.level]}>
         <WachelMap calc={calc} inp={inp} />
         <p className="px-note">
           {BOUNDARIES[3].detail}　現在値: MW={calc.mw}・ρd≈{calc.rho < 10 ? calc.rho.toFixed(1) : calc.rho.toFixed(0)} kg/m³（理想気体推定）。
         </p>
         <p className="px-cav">{BOUNDARIES[3].caution}　<Cites refs={BOUNDARIES[3].sources} /></p>
-      </div>
+      </Sec>
 
-      {/* B5–B7 情報カード */}
+      {/* B5–B8 情報カード */}
       <div className="px-cards3">
         {infoBs.map((b) => (
-          <div className="panel px-card" key={b.id}>
-            <h3><b>{b.id}</b> <small>{b.name}</small></h3>
+          <Sec key={b.id} id={b.id} title={b.name}
+            defaultOpen={b.id === 'B5' && inp.motor}
+            badge={b.id === 'B5' ? (inp.motor ? '効いている' : undefined) : undefined}
+            badgeColor={LV_COLOR.navy}>
+            <BndSketch id={b.id} />
             <div className="px-law">{b.law}</div>
             {b.id === 'B8' && (
               <div className="px-law">
@@ -531,7 +601,7 @@ function BoundariesView({
             </p>
             {b.caution && <p className="px-cav">{b.caution}</p>}
             <Cites refs={b.sources} />
-          </div>
+          </Sec>
         ))}
       </div>
 
